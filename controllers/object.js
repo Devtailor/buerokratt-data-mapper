@@ -66,7 +66,7 @@ router.post(
         .send({ error: "Intent name contains illegal characters" });
     }
 
-    const pattern = new RegExp(`^utter_${intent}`);
+    const pattern = new RegExp(`^utter_${intent}$`);
     
     const result = Object.entries(responses).reduce((acc, [key, value]) => {
       if (!pattern.test(key)) {
