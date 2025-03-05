@@ -5,6 +5,7 @@ import { body, matchedData, validationResult } from "express-validator";
 import Papa from "papaparse";
 import secrets from "./controllers/secrets.js";
 import fs from "fs";
+import axios from "axios";
 import files from "./controllers/files.js";
 import crypto from "crypto";
 import bodyParser from "body-parser";
@@ -20,8 +21,10 @@ import { generateMessagesTable } from "./js/convert/pdf.js";
 import * as helpers from "./lib/helpers.js";
 import {
   buildContentFilePath,
+  getCookie,
   getHeadersMapping,
   parseBoolean,
+  parseJwt,
 } from "./js/util/utils.js";
 import base64ToText from "./js/util/base64ToText.js";
 import conversion from "./controllers/conversion.js";
@@ -46,7 +49,7 @@ const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
 const hbs = create({ helpers });
 
 const PORT = process.env.PORT || 3000;
-const REQUEST_SIZE_LIMIT = '100mb';
+const REQUEST_SIZE_LIMIT = "100mb";
 const app = express().disable("x-powered-by");
 const rateLimit = setRateLimit({
   // One minute
@@ -78,14 +81,14 @@ app.use(
   encryption({
     publicKey: publicKey,
     privateKey: privateKey,
-  })
+  }),
 );
 app.use(
   "/decryption",
   decryption({
     publicKey: publicKey,
     privateKey: privateKey,
-  })
+  }),
 );
 app.use(express.json({ limit: REQUEST_SIZE_LIMIT }));
 
@@ -103,7 +106,7 @@ app.engine(
   ".handlebars",
   engine({
     layoutsDir: path.join(__dirname, "views/layouts"),
-  })
+  }),
 );
 
 app.engine(".hbs", hbs.engine);
@@ -116,7 +119,7 @@ app.get(
   "/",
   handled(async (req, res, next) => {
     res.render(__dirname + "/views/home.handlebars", { title: "Home" });
-  })
+  }),
 );
 
 const handleRender = (req, res, templatePath) => {
@@ -148,7 +151,7 @@ app.post(
     const templatePath =
       __dirname + "/views/" + normalizedParams + ".handlebars";
     handleRender(req, res, templatePath);
-  })
+  }),
 );
 
 app.post(
@@ -161,7 +164,7 @@ app.post(
     const templatePath =
       __dirname + "/module/" + project + "/hbs/" + normalizedParams + EXTENSION;
     handleRender(req, res, templatePath);
-  })
+  }),
 );
 
 app.post(
@@ -194,15 +197,15 @@ app.post(
       template,
       messages,
       parseBoolean(csaTitleVisible),
-      parseBoolean(csaNameVisible)
+      parseBoolean(csaNameVisible),
     );
 
     try {
       res.json({ response: await convertHtmlToPdf(html) });
     } catch (error) {
-      res.status(500).json({message: "Error generating PDF"});
+      res.status(500).json({ message: "Error generating PDF" });
     }
-  }
+  },
 );
 
 app.post(
@@ -251,7 +254,7 @@ app.post(
       bulkData += JSON.stringify(item) + "\n";
     });
     res.send(bulkData);
-  }
+  },
 );
 
 app.get("/js/*", rateLimit, (req, res) => {
@@ -277,6 +280,76 @@ app.post("/example/post", (req, res) => {
   console.log(`POST endpoint received ${JSON.stringify(req.body)}`);
   res.status(200).json({ message: `received value ${req.body.name}` });
 });
+
+app.post(
+  "/tmp/smax-auth",
+  [
+    body("Login")
+      .isString()
+      .withMessage("Login is required and must be a string"),
+    body("Password")
+      .isString()
+      .withMessage("Password is required and must be a string"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { Login, Password } = matchedData(req);
+
+    if (!process.env.SMAX_AUTHENTICATION_URL) {
+      return res.status(500).json({ error: `SMAX_AUTHENTICATION_URL is not set` });
+    }
+
+    try {
+      const { data } = await axios.post(
+        process.env.SMAX_AUTHENTICATION_URL,
+        { Login, Password },
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      res.json({ token: data });
+    } catch (error) {
+      return res.status(401).json({ error: `Unauthorized` });
+    }
+  },
+);
+
+app.post(
+  "/extract-smax-email",
+  [
+    body("cookieString")
+      .isString()
+      .withMessage("cookieString is required and must be a string"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { cookieString } = matchedData(req);
+    const cookieName = "SMAX_AUTH_TOKEN";
+
+    const jwtToken = getCookie(cookieString, cookieName);
+    if (!jwtToken) {
+      return res
+        .status(400)
+        .json({ error: `Cookie "${cookieName}" not found` });
+    }
+
+    const payload = parseJwt(jwtToken);
+    if (!payload || !payload.prn) {
+      return res
+        .status(400)
+        .json({ error: "Invalid JWT or 'prn' property missing" });
+    }
+
+    res.json({ email: payload.prn });
+  },
+);
 
 app.get("/status", (req, res) => res.status(200).send("ok"));
 
