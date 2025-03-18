@@ -12,12 +12,12 @@ async function getBrowser() {
       // https://github.com/puppeteer/puppeteer/issues/12189
       '--disable-gpu',
       '--disable-dev-shm-usage',
-      '--enable-logging',
-      '--v=1'
-    ],
-    dumpio: true,
+      '--disable-extensions',
+      '--disable-default-apps',
+      '--disable-infobars',
+      '--headless=new'
+    ]
   });
-  console.debug("convertHtmlToPdf: created browser");
 
   return browser;
 }
@@ -28,8 +28,6 @@ export async function convertHtmlToPdf(html) {
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load", timeout: 0 });
-    
-    console.debug("convertHtmlToPdf: created page")
 
     const uintArray = await page.pdf({
       format: "A4",
@@ -37,10 +35,8 @@ export async function convertHtmlToPdf(html) {
       timeout: 0,
     });
     const base64 = Buffer.from(uintArray).toString("base64");
-    console.debug("convertHtmlToPdf: created pdf")
 
     await page.close();
-    console.debug("convertHtmlToPdf: closed page")
 
     return base64;
   } catch (error) {
