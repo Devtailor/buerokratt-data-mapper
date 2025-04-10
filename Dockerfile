@@ -7,7 +7,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN apk add --no-cache chromium && apk add --no-cache curl
-COPY package*.json .
+COPY package.json .
 # Uncomment this when you run npm install locally
 #RUN npm ci --ignore-scripts
 RUN npm install --ignore-scripts 
