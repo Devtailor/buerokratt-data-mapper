@@ -57,6 +57,13 @@ const rateLimit = setRateLimit({
   statusCode: 429,
 });
 
+const startTimestamp = new Date().getTime();
+const appName = process.env.APP_NAME || "DataMapper";
+const release = process.env.RELEASE || "unknown";
+const major = process.env.MAJOR || "unknown";
+const minor = process.env.MINOR || "unknown";
+const patch = process.env.PATCH || "unknown";
+
 app.use(bodyParser.json({ limit: REQUEST_SIZE_LIMIT }));
 app.use(bodyParser.text());
 app.use(requestLoggerMiddleware({ logger: console.log }));
@@ -279,6 +286,16 @@ app.post("/example/post", (req, res) => {
 });
 
 app.get("/status", (req, res) => res.status(200).send("ok"));
+
+app.get("/healthz", (req, res) => {
+  res.status(200).send({
+    appName,
+    version: `${release}-${major}.${minor}.${patch}`,
+    packagingTime: process.env.BUILDTIME,
+    appStartTime: startTimestamp,
+    serverTime: new Date().getTime(),
+  });
+});
 
 app.listen(PORT, () => {
   console.log("Nodejs server running on http://localhost:%s", PORT);
