@@ -8,6 +8,7 @@ import fs from "fs";
 import files from "./controllers/files.js";
 import crypto from "crypto";
 import bodyParser from "body-parser";
+import 'dotenv/config'
 
 import encryption from "./controllers/encryption.js";
 import decryption from "./controllers/decryption.js";
@@ -59,7 +60,6 @@ const rateLimit = setRateLimit({
 
 const startTimestamp = new Date().getTime();
 const appName = process.env.APP_NAME || "DataMapper";
-const release = process.env.RELEASE || "unknown";
 const major = process.env.MAJOR || "unknown";
 const minor = process.env.MINOR || "unknown";
 const patch = process.env.PATCH || "unknown";
@@ -290,7 +290,7 @@ app.get("/status", (req, res) => res.status(200).send("ok"));
 app.get("/healthz", (req, res) => {
   res.status(200).send({
     appName,
-    version: `${release}-${major}.${minor}.${patch}`,
+    version: `v${major}.${minor}.${patch}`,
     packagingTime: process.env.BUILDTIME,
     appStartTime: startTimestamp,
     serverTime: new Date().getTime(),
