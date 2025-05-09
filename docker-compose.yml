@@ -8,6 +8,8 @@ services:
       - 3000:3000
     networks:
       - node
+    env_file:
+      - .env
 
 networks:
   node:
