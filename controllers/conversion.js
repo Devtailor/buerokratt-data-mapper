@@ -319,6 +319,32 @@ router.post('/array-to-xlsx',
     res.json({ base64String: buffer.toString('base64') });
 });
 
+router.post('/examples-array-to-xlsx',
+  [
+    body("data")
+      .isArray()
+      .withMessage("data must be an array of string arrays")
+  ],
+  async (req, res) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+
+    req.body.data.flat().forEach((value) => {
+      const processedValue = (!isNaN(value) && value !== '') ? Number(value) : value;
+      worksheet.addRow([processedValue]);
+    });
+
+    let maxLength = 0;
+    worksheet.getColumn(1).eachCell({ includeEmpty: true }, (cell) => {
+      const length = cell.value ? cell.value.toString().length : 10;
+      maxLength = Math.max(maxLength, length);
+    });
+    worksheet.getColumn(1).width = maxLength;
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    res.json({ base64String: buffer.toString('base64') });
+  });
+
 
 router.post("/xlsx-to-array", async (req, res) => {
   try {
