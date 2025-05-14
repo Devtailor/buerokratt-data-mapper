@@ -44,8 +44,7 @@ jobs:
         run: |
           awk -v branch="${{ env.BRANCH }}" ' /^[0-9a-zA-Z]+$/ { current_branch = $0; } current_branch == branch && /^[A-Z_]+=/{ print $0; }' release.env | tee -a $GITHUB_ENV >> .env
           echo "BUILDTIME=$(($(date +%s%N)/1000000))" >> .env
-          echo "RELEASE=${{ env.BRANCH }}" >> .env
-          
+
       - name: Set repo
         run: |
            LOWER_CASE_GITHUB_REPOSITORY=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
