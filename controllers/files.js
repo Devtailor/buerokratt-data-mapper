@@ -11,6 +11,7 @@ import readFullFile from "../js/file/read-file.js";
 import editFile from "../js/file/edit.js";
 import deleteAllThatStartsWith from "../js/file/delete-all-that-starts-with.js";
 import deleteAllThatContains from "../js/file/delete-all-that-contains.js";
+import moveAllThatStartsWith from "../js/file/move-all-that-starts-with.js";
 import merge from "../js/file/merge.js";
 import readFileDir from "../js/file/read-file-dir.js";
 import { buildContentFilePath } from "../js/util/utils.js";
@@ -74,6 +75,20 @@ router.post("/delete-all-that-starts-with", async (req, res) => {
     .normalize(req.body.keyword)
     .replace(/^(\.\.(\/|\\|$))+/, "");
   await deleteAllThatStartsWith(filepath, normalizedKeyWord, res);
+});
+
+router.post("/move-all-that-starts-with", async (req, res) => {
+  const filepath = buildContentFilePath(req.body.file_path);
+  const newPath = buildContentFilePath(req.body.new_path);
+  const format = req.body.format ?? 'tmp';
+
+  // TODO: this sanitization is done to resolve snyk errors,
+  // this is actually not needed here according to the implementation logic
+  const normalizedKeyWord = path
+    .normalize(req.body.keyword)
+    .replace(/^(\.\.(\/|\\|$))+/, "");
+
+  await moveAllThatStartsWith(filepath, newPath, normalizedKeyWord, format, res);
 });
 
 router.post("/delete-all-that-contains", async (req, res) => {
