@@ -104,8 +104,7 @@ router.post("/delete-all-that-contains", async (req, res) => {
 
 router.post("/read-file", async (req, res) => {
   const filepath = buildContentFilePath(req.body.file_path);
-  const result = await readFullFile(filepath);
-  res.json(result);
+  await readFullFile(filepath, res);
 });
 
 router.post("/merge", async (req, res) => {
