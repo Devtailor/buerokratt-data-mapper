@@ -7,7 +7,7 @@ export const extractMessageInfo = (
   const author = extractAuthor(message, csaTitleVisible, csaNameVisible);
 
   const date = new Date(message.created).toLocaleDateString("et-EE");
-  const time = new Date(message.created).toLocaleTimeString("et-EE");
+  const time = new Date(message.created).toLocaleTimeString("et-EE", { timeZone: "Europe/Tallinn" });
 
   const content = message.content
     ? tryUnesacpe(message.content)
