@@ -32,8 +32,12 @@ router.post("/create", async (req, res) => {
 router.post("/move", async (req, res) => {
   const filepath = buildContentFilePath(req.body.file_path);
   const newPath = buildContentFilePath(req.body.new_path);
-  const result = await moveFile(filepath, newPath);
-  return res.status(result.error ? 400 : 200).json(result);
+  if (filepath === newPath) {
+    return res.status(200).json({ message: "File is already there" });
+  } else {
+    const result = await moveFile(filepath, newPath);
+    return res.status(result.error ? 400 : 200).json(result);
+  }
 });
 
 router.post("/copy", async (req, res) => {
