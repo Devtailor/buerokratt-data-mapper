@@ -125,4 +125,34 @@ router.post(
   }
 );
 
+router.post("/get-selected-csa-nps",
+  [
+    body("data")
+      .isArray()
+      .withMessage("data is required and must be an array"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { data } = matchedData(req);
+
+    const response = [];
+    const periodNpsObject = {};
+
+    data.forEach((item) => {
+      const { periodNps, ...rest } = item;
+      response.push(rest);
+
+      if (!periodNpsObject[item.customerSupportFullName]) {
+        periodNpsObject[item.customerSupportFullName] = periodNps;
+      }
+    });
+
+    return res.status(200).send({ response, periodNpsByCsa: periodNpsObject });
+  }
+)
+
 export default router;

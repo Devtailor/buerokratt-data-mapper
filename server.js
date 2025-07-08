@@ -9,6 +9,7 @@ import axios from "axios";
 import files from "./controllers/files.js";
 import crypto from "crypto";
 import bodyParser from "body-parser";
+import 'dotenv/config'
 
 import encryption from "./controllers/encryption.js";
 import decryption from "./controllers/decryption.js";
@@ -59,6 +60,12 @@ const rateLimit = setRateLimit({
   headers: true,
   statusCode: 429,
 });
+
+const startTimestamp = new Date().getTime();
+const appName = process.env.APP_NAME || "DataMapper";
+const major = process.env.MAJOR || "unknown";
+const minor = process.env.MINOR || "unknown";
+const patch = process.env.PATCH || "unknown";
 
 app.use(bodyParser.json({ limit: REQUEST_SIZE_LIMIT }));
 app.use(bodyParser.text());
@@ -352,6 +359,16 @@ app.post(
 );
 
 app.get("/status", (req, res) => res.status(200).send("ok"));
+
+app.get("/healthz", (req, res) => {
+  res.status(200).send({
+    appName,
+    version: `v${major}.${minor}.${patch}`,
+    packagingTime: process.env.BUILDTIME,
+    appStartTime: startTimestamp,
+    serverTime: new Date().getTime(),
+  });
+});
 
 app.listen(PORT, () => {
   console.log("Nodejs server running on http://localhost:%s", PORT);
