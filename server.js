@@ -9,7 +9,7 @@ import axios from "axios";
 import files from "./controllers/files.js";
 import crypto from "crypto";
 import bodyParser from "body-parser";
-import 'dotenv/config'
+import "dotenv/config";
 
 import encryption from "./controllers/encryption.js";
 import decryption from "./controllers/decryption.js";
@@ -22,7 +22,6 @@ import { generateMessagesTable } from "./js/convert/pdf.js";
 import * as helpers from "./lib/helpers.js";
 import {
   buildContentFilePath,
-  getCookie,
   getHeadersMapping,
   parseBoolean,
   parseJwt,
@@ -306,7 +305,9 @@ app.post(
     const { Login, Password } = matchedData(req);
 
     if (!process.env.SMAX_AUTHENTICATION_URL) {
-      return res.status(500).json({ error: `SMAX_AUTHENTICATION_URL is not set` });
+      return res
+        .status(500)
+        .json({ error: `SMAX_AUTHENTICATION_URL is not set` });
     }
 
     try {
@@ -327,9 +328,9 @@ app.post(
 app.post(
   "/extract-smax-email",
   [
-    body("cookieString")
+    body("jwtToken")
       .isString()
-      .withMessage("cookieString is required and must be a string"),
+      .withMessage("jwtToken is required and must be a string"),
   ],
   (req, res) => {
     const errors = validationResult(req);
@@ -337,16 +338,7 @@ app.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { cookieString } = matchedData(req);
-    const cookieName = "SMAX_AUTH_TOKEN";
-
-    const jwtToken = getCookie(cookieString, cookieName);
-    if (!jwtToken) {
-      return res
-        .status(400)
-        .json({ error: `Cookie "${cookieName}" not found` });
-    }
-
+    const { jwtToken } = matchedData(req);
     const payload = parseJwt(jwtToken);
     if (!payload || !payload.prn) {
       return res

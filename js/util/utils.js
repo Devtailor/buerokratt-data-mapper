@@ -57,7 +57,7 @@ const getAllFilesInsideFolder = function (dirPath, arrayOfFiles) {
     if (fs.statSync(dirPath + "/" + file).isDirectory()) {
       arrayOfFiles = getAllFilesInsideFolder(
         dirPath + "/" + file,
-        arrayOfFiles
+        arrayOfFiles,
       );
     } else {
       arrayOfFiles.push(path.join(dirPath, "/", file));
@@ -138,17 +138,6 @@ export const getHeadersMapping = (csv_type) => {
   } else {
     return {};
   }
-};
-
-export const getCookie = (cookieString, name) => {
-  const cookies = cookieString.split("; ");
-  for (let cookie of cookies) {
-    const [key, value] = cookie.split("=");
-    if (key === name) {
-      return decodeURIComponent(value);
-    }
-  }
-  return null;
 };
 
 export const parseJwt = (token) => {
