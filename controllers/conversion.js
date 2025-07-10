@@ -58,9 +58,18 @@ router.post("/json_to_yaml_domain", (req, res) => {
   }
 });
 
+
 router.post("/json_to_yaml_data", (req, res) => {
-  const result = stringify(req.body.data);
-  res.send({ yaml: result });
+  try {
+    let result = stringify(req.body.data, { lineWidth: -1 });
+    result = result.replace(/(^[a-zA-Z_]+:)/gm, "\n$1");
+    result = result.trimStart();
+    res.send({ yaml: result });
+  } catch (error) {
+    console.error("Error formatting yaml lines", error);
+    const result = stringify(req.body.data);
+    res.send({ yaml: result });
+  }
 });
 
 router.post(
