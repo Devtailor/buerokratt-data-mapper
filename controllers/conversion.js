@@ -62,7 +62,7 @@ router.post("/json_to_yaml_domain", (req, res) => {
 router.post("/json_to_yaml_data", (req, res) => {
   try {
     let result = stringify(req.body.data, { lineWidth: -1 });
-    result = result.replace(/(^[a-zA-Z_]+:)/gm, "\n$1");
+    result = result.replace(/(\n[^\s].+?:)/g, "\n$1");
     result = result.trimStart();
     res.send({ yaml: result });
   } catch (error) {
