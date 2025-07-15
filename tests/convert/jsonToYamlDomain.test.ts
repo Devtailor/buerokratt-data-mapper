@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { convertJsonToYamlDomain } from "../../js/convert/jsonToYamlDomain.js";
+import {
+  convertJsonToYamlDomain,
+  processTextFields,
+} from "../../js/convert/jsonToYamlDomain.js";
 
 describe("convertJsonToYamlDomain", () => {
   it("should convert simple JSON to YAML with proper text field handling", () => {
@@ -184,5 +187,147 @@ text: "text with null context"
 `;
 
     expect(result).toBe(expected);
+  });
+});
+
+describe("processTextFields", () => {
+  it("should process simple text field with newlines", () => {
+    const input = { text: "hello\nworld" };
+    const result = processTextFields(input);
+    const expected = { text: "hello\\nworld" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should process text field with multiple newlines", () => {
+    const input = { text: "line1\n\nline3" };
+    const result = processTextFields(input);
+    const expected = { text: "line1\\n\\nline3" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should process text field with tabs and carriage returns", () => {
+    const input = { text: "text\twith\r\nnewlines" };
+    const result = processTextFields(input);
+    const expected = { text: "text\\twith\\r\\nnewlines" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should not process non-text fields", () => {
+    const input = { name: "hello\nworld", text: "hello\nworld" };
+    const result = processTextFields(input);
+    const expected = { name: "hello\nworld", text: "hello\\nworld" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should process nested objects with text fields", () => {
+    const input = { level1: { level2: { text: "nested\ntext" } } };
+    const result = processTextFields(input);
+    const expected = { level1: { level2: { text: "nested\\ntext" } } };
+    expect(result).toEqual(expected);
+  });
+
+  it("should process arrays with text fields", () => {
+    const input = {
+      items: [{ text: "first\nitem" }, { text: "second\nitem" }],
+    };
+    const result = processTextFields(input);
+    const expected = {
+      items: [{ text: "first\\nitem" }, { text: "second\\nitem" }],
+    };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle mixed content types", () => {
+    const input = {
+      number: 42,
+      boolean: true,
+      text: "text\nwith\nnewlines",
+      array: [1, 2, 3],
+      object: { key: "value" },
+    };
+    const result = processTextFields(input);
+    const expected = {
+      number: 42,
+      boolean: true,
+      text: "text\\nwith\\nnewlines",
+      array: [1, 2, 3],
+      object: { key: "value" },
+    };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle empty objects and arrays", () => {
+    const input = { emptyObject: {}, emptyArray: [], text: "some\ntext" };
+    const result = processTextFields(input);
+    const expected = { emptyObject: {}, emptyArray: [], text: "some\\ntext" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle null values", () => {
+    const input = { nullValue: null, text: "text\nwith\nnull" };
+    const result = processTextFields(input);
+    const expected = { nullValue: null, text: "text\\nwith\\nnull" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle complex nested structure", () => {
+    const input = {
+      conversation: {
+        intents: [
+          {
+            intent: "greet",
+            examples: [{ text: "hello\nworld" }, { text: "hi\nthere" }],
+          },
+        ],
+      },
+    };
+    const result = processTextFields(input);
+    const expected = {
+      conversation: {
+        intents: [
+          {
+            intent: "greet",
+            examples: [{ text: "hello\\nworld" }, { text: "hi\\nthere" }],
+          },
+        ],
+      },
+    };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle non-string text values", () => {
+    const input = { text: 123, anotherText: "real\ntext" };
+    const result = processTextFields(input);
+    const expected = { text: 123, anotherText: "real\ntext" };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle deeply nested text fields", () => {
+    const input = {
+      a: { b: { c: { d: { e: { text: "very\ndeep\nnesting" } } } } },
+    };
+    const result = processTextFields(input);
+    const expected = {
+      a: { b: { c: { d: { e: { text: "very\\ndeep\\nnesting" } } } } },
+    };
+    expect(result).toEqual(expected);
+  });
+
+  it("should handle primitive values", () => {
+    const input = "just a string";
+    const result = processTextFields(input);
+    expect(result).toBe(input);
+  });
+
+  it("should handle null input", () => {
+    const input = null;
+    const result = processTextFields(input);
+    expect(result).toBe(input);
+  });
+
+  it("should handle undefined input", () => {
+    const input = undefined;
+    const result = processTextFields(input);
+    expect(result).toBe(input);
   });
 });

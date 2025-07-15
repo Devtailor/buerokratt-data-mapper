@@ -30,24 +30,24 @@ export const convertJsonToYamlDomain = (jsonData) => {
 };
 
 // Pre-process the JSON to escape newlines in text fields before YAML conversion
-const processTextFields = (obj) => {
-    if (typeof obj === 'object' && obj !== null) {
-      if (Array.isArray(obj)) {
-        return obj.map(item => processTextFields(item));
-      } else {
-        const processed = {};
-        for (const [key, value] of Object.entries(obj)) {
-          if (key === 'text' && typeof value === 'string') {
-            // Escape newlines and other special characters to preserve them as literal strings
-            processed[key] = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
-          } else if (typeof value === 'object' && value !== null) {
-            processed[key] = processTextFields(value);
-          } else {
-            processed[key] = value;
-          }
+export const processTextFields = (obj) => {
+  if (typeof obj === 'object' && obj !== null) {
+    if (Array.isArray(obj)) {
+      return obj.map(item => processTextFields(item));
+    } else {
+      const processed = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (key === 'text' && typeof value === 'string') {
+          // Escape newlines and other special characters to preserve them as literal strings
+          processed[key] = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+        } else if (typeof value === 'object' && value !== null) {
+          processed[key] = processTextFields(value);
+        } else {
+          processed[key] = value;
         }
-        return processed;
       }
+      return processed;
     }
-    return obj;
+  }
+  return obj;
 };
