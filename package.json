@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
     "prepare": "husky",
     "changelog": "./generate-changelog.sh",
     "sync-version": "./sync-version.sh",
@@ -33,10 +36,14 @@
     "yaml": "^2.2.1"
   },
   "devDependencies": {
-    "husky": "^9.1.6"
+    "@types/node": "^24.0.14",
+    "@vitest/ui": "^3.2.4",
+    "husky": "^9.1.6",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "engines": {
-    "node": "^20.13.1",
-    "npm": "^10.5.2"
+    "node": "^20.19.3",
+    "npm": "^11.4.2"
   }
 }

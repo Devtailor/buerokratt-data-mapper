@@ -1,28 +1,5 @@
 import { stringify } from "yaml";
 
-// Pre-process the JSON to escape newlines in text fields before YAML conversion
-const processTextFields = (obj) => {
-  if (typeof obj === 'object' && obj !== null) {
-    if (Array.isArray(obj)) {
-      return obj.map(item => processTextFields(item));
-    } else {
-      const processed = {};
-      for (const [key, value] of Object.entries(obj)) {
-        if (key === 'text' && typeof value === 'string') {
-          // Escape newlines and other special characters to preserve them as literal strings
-          processed[key] = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
-        } else if (typeof value === 'object' && value !== null) {
-          processed[key] = processTextFields(value);
-        } else {
-          processed[key] = value;
-        }
-      }
-      return processed;
-    }
-  }
-  return obj;
-};
-
 export const convertJsonToYamlDomain = (jsonData) => {
   const processedData = processTextFields(jsonData);
   let convertedYaml = stringify(processedData, { lineWidth: 0 });
@@ -50,4 +27,27 @@ export const convertJsonToYamlDomain = (jsonData) => {
   });
 
   return processedLines.join("\n");
-}; 
+};
+
+// Pre-process the JSON to escape newlines in text fields before YAML conversion
+const processTextFields = (obj) => {
+    if (typeof obj === 'object' && obj !== null) {
+      if (Array.isArray(obj)) {
+        return obj.map(item => processTextFields(item));
+      } else {
+        const processed = {};
+        for (const [key, value] of Object.entries(obj)) {
+          if (key === 'text' && typeof value === 'string') {
+            // Escape newlines and other special characters to preserve them as literal strings
+            processed[key] = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+          } else if (typeof value === 'object' && value !== null) {
+            processed[key] = processTextFields(value);
+          } else {
+            processed[key] = value;
+          }
+        }
+        return processed;
+      }
+    }
+    return obj;
+};
