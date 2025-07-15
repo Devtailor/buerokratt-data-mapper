@@ -55,7 +55,7 @@ npm start
 Tests are written in TypeScript (and the project should be migrated to TypeScript in the future too). Available npm scripts:
 
 ```bash
-npm test          # Run tests in watch mode
-npm run test:run  # Run tests once
+npm test               # Run tests in watch mode
+npm run test:run       # Run tests once
 npm run test:coverage  # Run tests with coverage
 ````
