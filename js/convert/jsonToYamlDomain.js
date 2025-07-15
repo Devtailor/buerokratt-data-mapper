@@ -1,7 +1,7 @@
 import { stringify } from "yaml";
 
 export const convertJsonToYamlDomain = (jsonData) => {
-  const processedData = processTextFields(jsonData);
+  const processedData = escapeTextFieldNewlines(jsonData);
   let convertedYaml = stringify(processedData, { lineWidth: 0 });
   const lines = convertedYaml.split("\n");
 
@@ -30,18 +30,18 @@ export const convertJsonToYamlDomain = (jsonData) => {
 };
 
 // Pre-process the JSON to escape newlines in text fields before YAML conversion
-export const processTextFields = (obj) => {
+export const escapeTextFieldNewlines = (obj) => {
   if (typeof obj === 'object' && obj !== null) {
     if (Array.isArray(obj)) {
-      return obj.map(item => processTextFields(item));
+      return obj.map(item => escapeTextFieldNewlines(item));
     } else {
       const processed = {};
       for (const [key, value] of Object.entries(obj)) {
         if (key === 'text' && typeof value === 'string') {
-          // Escape newlines and other special characters to preserve them as literal strings
-          processed[key] = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+          // Escape newlines to preserve them as literal strings
+          processed[key] = value.replace(/\n/g, '\\n');
         } else if (typeof value === 'object' && value !== null) {
-          processed[key] = processTextFields(value);
+          processed[key] = escapeTextFieldNewlines(value);
         } else {
           processed[key] = value;
         }
