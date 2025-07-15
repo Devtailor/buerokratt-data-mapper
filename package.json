@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "vitest",
-    "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     "changelog": "./generate-changelog.sh",
     "sync-version": "./sync-version.sh",
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.14",
+    "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "husky": "^9.1.6",
     "typescript": "^5.8.3",

@@ -37,7 +37,7 @@ _Note!_ URL must not end with `.js` extension.
 To develop the DataMapper, it's recommended to have [nvm](https://github.com/nvm-sh/nvm) installed, which will ensure you
 have the correct node and npm versions.
 
-```
+````
 # Install the required node version
 nvm install
 
@@ -49,4 +49,13 @@ npm install
 
 # Run the API
 npm start
-```
+
+## Tests
+
+Tests are written in TypeScript (and the project should be migrated to TypeScript in the future too). Available npm scripts:
+
+```bash
+npm test          # Run tests in watch mode
+npm run test:run  # Run tests once
+npm run test:coverage  # Run tests with coverage
+````
