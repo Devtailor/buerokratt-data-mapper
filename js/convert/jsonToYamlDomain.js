@@ -31,23 +31,27 @@ export const convertJsonToYamlDomain = (jsonData) => {
 
 // Pre-process the JSON to escape newlines in text fields before YAML conversion
 export const escapeTextFieldNewlines = (obj) => {
-  if (typeof obj === 'object' && obj !== null) {
-    if (Array.isArray(obj)) {
-      return obj.map(item => escapeTextFieldNewlines(item));
+  // Early return for non-objects or null
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => escapeTextFieldNewlines(item));
+  }
+
+  // Handle objects
+  const processed = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === 'text' && typeof value === 'string') {
+      // Escape newlines to preserve them as literal strings
+      processed[key] = value.replace(/\n/g, '\\n');
+    } else if (typeof value === 'object' && value !== null) {
+      processed[key] = escapeTextFieldNewlines(value);
     } else {
-      const processed = {};
-      for (const [key, value] of Object.entries(obj)) {
-        if (key === 'text' && typeof value === 'string') {
-          // Escape newlines to preserve them as literal strings
-          processed[key] = value.replace(/\n/g, '\\n');
-        } else if (typeof value === 'object' && value !== null) {
-          processed[key] = escapeTextFieldNewlines(value);
-        } else {
-          processed[key] = value;
-        }
-      }
-      return processed;
+      processed[key] = value;
     }
   }
-  return obj;
+  return processed;
 };
