@@ -28,5 +28,3 @@ router.get("/generate", async (req, res) => {
 });
 
 export default router;
-
-
