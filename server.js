@@ -209,6 +209,7 @@ app.post(
     try {
       res.json({ response: await convertHtmlToPdf(html) });
     } catch (error) {
+      console.error(error)
       res.status(500).json({message: "Error generating PDF"});
     }
   }
