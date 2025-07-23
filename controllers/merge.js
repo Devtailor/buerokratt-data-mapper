@@ -125,4 +125,16 @@ router.post(
   }
 );
 
+router.post("/multi-objects", async (req, res) => {
+  const objects = req.body;
+  const objectCount =  Object.keys(objects).length;
+  if (objectCount > 0 && objectCount < 2) {
+    return res.status(400).contentType("text/plain").send("At least two object are required");
+  }
+
+  const combinedObject = Object.values(objects).reduce((acc, obj) => ({ ...acc, ...obj }), {});
+
+  res.json(combinedObject);
+});
+
 export default router;
