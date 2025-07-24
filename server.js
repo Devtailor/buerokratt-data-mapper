@@ -40,6 +40,7 @@ import domain from "./controllers/domain.js";
 import forms from "./controllers/forms.js";
 import { requestLoggerMiddleware } from "./lib/requestLoggerMiddleware.js";
 import "./watchers/watcher.js";
+import certificates from "./controllers/certificates.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
@@ -81,6 +82,7 @@ app.use("/validate", validate);
 app.use("/utils", utils);
 app.use("/domain", domain);
 app.use("/forms", forms);
+app.use("/certificates", certificates);
 app.use(express.urlencoded({ limit: REQUEST_SIZE_LIMIT, extended: true }));
 app.use(
   "/encryption",
