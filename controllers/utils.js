@@ -55,4 +55,19 @@ function checkIdExists(array, id) {
   return false;
 }
 
+router.post("/map-domains-data", async (req, res) => {
+  const { domains, userDomains } = req.body;
+
+  const result = domains
+    .filter(domain => userDomains.domains.includes(domain.domainId))
+    .map(domain => ({
+      id: domain.domainId,
+      name: domain.name,
+      url: domain.url,
+      selected: userDomains.selected.includes(domain.domainId)
+    }));
+
+  return res.json(result);
+});
+
 export default router;

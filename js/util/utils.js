@@ -57,7 +57,7 @@ const getAllFilesInsideFolder = function (dirPath, arrayOfFiles) {
     if (fs.statSync(dirPath + "/" + file).isDirectory()) {
       arrayOfFiles = getAllFilesInsideFolder(
         dirPath + "/" + file,
-        arrayOfFiles
+        arrayOfFiles,
       );
     } else {
       arrayOfFiles.push(path.join(dirPath, "/", file));
@@ -137,5 +137,17 @@ export const getHeadersMapping = (csv_type) => {
     };
   } else {
     return {};
+  }
+};
+
+export const parseJwt = (token) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = Buffer.from(base64, "base64").toString("utf-8");
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Invalid JWT:", error);
+    return null;
   }
 };
