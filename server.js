@@ -18,6 +18,7 @@ import { fileURLToPath } from "url";
 
 import sendMockEmail from "./js/email/sendMockEmail.js";
 import { convertHtmlToPdf } from "./js/generate/convertHtmlToPdf.js";
+import generateButtonsList from "./js/generate/buttonsList.js"
 import { generateMessagesTable } from "./js/convert/pdf.js";
 import * as helpers from "./lib/helpers.js";
 import {
@@ -215,6 +216,17 @@ app.post(
     }
   },
 );
+
+app.post("/generate/buttons-list", (req, res) => {
+  const response = generateButtonsList(
+    req.body.list,
+    req.body.service_name,
+    req.body.key,
+    req.body.payload_prefix ?? "",
+    req.body.payload_keys ?? []
+  );
+  res.status(200).json({response});
+});
 
 app.post(
   "/parse-csv-to-opensearch-data",
