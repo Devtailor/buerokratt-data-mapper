@@ -1,19 +1,20 @@
-import express from "express";
-import { generateKeyPairSync } from "crypto";
+import { generateKeyPairSync } from 'crypto';
+
+import express from 'express';
 
 const router = express.Router();
 
-router.get("/generate", async (req, res) => {
+router.get('/generate', async (req, res) => {
   try {
-    const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+    const { publicKey, privateKey } = generateKeyPairSync('rsa', {
       modulusLength: 2048,
       publicKeyEncoding: {
-        type: "spki",
-        format: "pem",
+        type: 'spki',
+        format: 'pem',
       },
       privateKeyEncoding: {
-        type: "pkcs1",
-        format: "pem",
+        type: 'pkcs1',
+        format: 'pem',
       },
     });
 
@@ -22,8 +23,8 @@ router.get("/generate", async (req, res) => {
       privateKey,
     });
   } catch (err) {
-    console.error("RSA key generation error:", err);
-    res.status(500).send("RSA key generation failed");
+    console.error('RSA key generation error:', err);
+    res.status(500).send('RSA key generation failed');
   }
 });
 

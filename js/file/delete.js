@@ -1,11 +1,12 @@
-import fs from "fs";
-import { isValidFilePath } from "../util/utils.js";
+import fs from 'fs';
+
+import { isValidFilePath } from '../util/utils.js';
 
 export default async function deleteFile(file_path) {
   if (!isValidFilePath(file_path)) {
     return {
       error: true,
-      message: "File path contains illegal characters",
+      message: 'File path contains illegal characters',
     };
   }
 
@@ -14,12 +15,12 @@ export default async function deleteFile(file_path) {
 
     return {
       error: false,
-      message: "File deleted successfully",
+      message: 'File deleted successfully',
     };
-  } catch (err) {
+  } catch (_) {
     return {
       error: true,
-      message: "Unable to delete file",
+      message: 'Unable to delete file',
     };
   }
 }

@@ -1,14 +1,14 @@
-import { stringify } from "yaml";
+import { stringify } from 'yaml';
 
 export const convertJsonToYamlDomain = (jsonData) => {
   const processedData = escapeTextFieldNewlines(jsonData);
   let convertedYaml = stringify(processedData, { lineWidth: 0 });
-  const lines = convertedYaml.split("\n");
+  const lines = convertedYaml.split('\n');
 
   const processedLines = lines.map((line) => {
     const trimmedLine = line.trim();
-    if (trimmedLine.startsWith("text:") || trimmedLine.startsWith("- text:")) {
-      const index = line.indexOf(":");
+    if (trimmedLine.startsWith('text:') || trimmedLine.startsWith('- text:')) {
+      const index = line.indexOf(':');
       const prefix = line.substring(0, index);
       const value = line.substring(index + 1).trim();
 
@@ -26,7 +26,7 @@ export const convertJsonToYamlDomain = (jsonData) => {
     return line;
   });
 
-  return processedLines.join("\n");
+  return processedLines.join('\n');
 };
 
 // Pre-process the JSON to escape newlines in text fields before YAML conversion
@@ -38,7 +38,7 @@ export const escapeTextFieldNewlines = (obj) => {
 
   // Handle arrays
   if (Array.isArray(obj)) {
-    return obj.map(item => escapeTextFieldNewlines(item));
+    return obj.map((item) => escapeTextFieldNewlines(item));
   }
 
   // Handle objects

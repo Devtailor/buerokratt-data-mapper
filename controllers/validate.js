@@ -1,17 +1,13 @@
-import express from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import express from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
 const router = express.Router();
 
 router.post(
-  "/array-elements-length",
+  '/array-elements-length',
   [
-    body("array")
-      .isArray()
-      .withMessage("array is required and must be an array"),
-    body("length")
-      .isNumeric()
-      .withMessage("length is required and must be a number"),
+    body('array').isArray().withMessage('array is required and must be an array'),
+    body('length').isNumeric().withMessage('length is required and must be a number'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -22,12 +18,11 @@ router.post(
     const { array, length } = matchedData(req);
 
     res.json(array.every((value) => value.length <= length));
-  }
+  },
 );
 
-router.post("/validate-stories-rules", async (req, res) => {
-  const steps =
-    req.category === "rules" ? req.body.rule.steps : req.body.story.steps;
+router.post('/validate-stories-rules', async (req, res) => {
+  const steps = req.category === 'rules' ? req.body.rule.steps : req.body.story.steps;
   const isValid = validateStepsForNoConsecutiveDuplicates(steps);
   res.json({ result: isValid });
 });
@@ -56,9 +51,7 @@ function validateStepsForNoConsecutiveDuplicates(steps) {
 }
 
 function hasCommonElement(arr1, arr2) {
-  return arr1.some((element) =>
-    arr2.some((item) => item.entity === element.entity)
-  );
+  return arr1.some((element) => arr2.some((item) => item.entity === element.entity));
 }
 
 export default router;

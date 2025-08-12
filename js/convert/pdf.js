@@ -1,11 +1,6 @@
-import { extractMessageInfo } from "../util/pdfs.js";
+import { extractMessageInfo } from '../util/pdfs.js';
 
-export const generateMessagesTable = (
-  template,
-  messages,
-  csaTitleVisible,
-  csaNameVisible
-) => {
+export const generateMessagesTable = (template, messages, csaTitleVisible, csaNameVisible) => {
   let _html = `<tr class="header">
                   <th style="text-align: left">Autor</th>
                   <th style="padding:0 50px; text-align: left">Sõnum</th>
@@ -15,12 +10,7 @@ export const generateMessagesTable = (
   for (const [i, element] of messages.entries()) {
     const previousMessage = i > 0 ? messages[i - 1] : null;
 
-    const { author, message, date } = extractMessageInfo(
-      element,
-      previousMessage,
-      csaTitleVisible,
-      csaNameVisible,
-    );
+    const { author, message, date } = extractMessageInfo(element, previousMessage, csaTitleVisible, csaNameVisible);
 
     _html += `<tr>
             <td style="border-bottom:1px solid lightgray">${author}</td>
@@ -29,5 +19,5 @@ export const generateMessagesTable = (
         </tr>`;
   }
 
-  return template.replace("{{{table}}}", _html);
+  return template.replace('{{{table}}}', _html);
 };

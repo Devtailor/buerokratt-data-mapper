@@ -1,12 +1,12 @@
-import express from "express";
+import express from 'express';
 
 const router = express.Router();
 
-router.post("/update-existing-response", (req, res) => {
+router.post('/update-existing-response', (req, res) => {
   const { json, searchKey, newKey, newKeyValue, deleteOldValue = true, createIfAbsent = false } = req.body;
   if (!json || !searchKey || !newKey || !newKeyValue) {
     return res.status(400).json({
-      message: "json, searchKey, newKey, newKeyValue are required fields",
+      message: 'json, searchKey, newKey, newKeyValue are required fields',
     });
   }
 

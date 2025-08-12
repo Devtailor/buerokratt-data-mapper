@@ -1,18 +1,19 @@
-import fs from "fs";
-import { isValidFilePath } from "../util/utils.js";
+import fs from 'fs';
+
+import { isValidFilePath } from '../util/utils.js';
 
 export default async function createFile(file_path, content) {
   if (!isValidFilePath(file_path)) {
     return {
       error: true,
-      message: "File path contains illegal characters",
+      message: 'File path contains illegal characters',
     };
   }
 
   if (!file_path || !content) {
     return {
       error: true,
-      message: "File path and content are required",
+      message: 'File path and content are required',
     };
   }
 
@@ -21,12 +22,12 @@ export default async function createFile(file_path, content) {
 
     return {
       error: false,
-      message: "File created successfully",
+      message: 'File created successfully',
     };
-  } catch (err) {
+  } catch (_) {
     return {
       error: true,
-      message: "Unable to create file",
+      message: 'Unable to create file',
     };
   }
 }

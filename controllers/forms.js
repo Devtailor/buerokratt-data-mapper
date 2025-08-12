@@ -1,20 +1,14 @@
-import express from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import express from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
 const router = express.Router();
 
 router.post(
-  "/detailed-information",
+  '/detailed-information',
   [
-    body("name")
-      .isString()
-      .withMessage("name is required and must be a string"),
-    body("slots")
-      .isObject()
-      .withMessage("slots is required and must be a JSON object"),
-    body("responses")
-      .isArray()
-      .withMessage("responses is required and must be an array"),
+    body('name').isString().withMessage('name is required and must be a string'),
+    body('slots').isObject().withMessage('slots is required and must be a JSON object'),
+    body('responses').isArray().withMessage('responses is required and must be an array'),
   ],
   (req, res) => {
     const errors = validationResult(req);
@@ -24,9 +18,9 @@ router.post(
 
     const { name, slots, responses } = matchedData(req);
 
-    const responseText = "utter_" + name;
+    const responseText = 'utter_' + name;
     let result = responses.find((fd) => fd.name === responseText);
-    result = result ? result.response[0].text : "";
+    result = result ? result.response[0].text : '';
 
     let ignoredIntents = [];
     const slotInfo = [];
@@ -38,7 +32,7 @@ router.post(
     if (slots.required_slots) {
       for (const name of slots.required_slots) {
         const slotQuestion = responses.find((response) => {
-          return response.name === "utter_ask_" + name;
+          return response.name === 'utter_ask_' + name;
         });
         if (slotQuestion) {
           const newObj = {
@@ -56,7 +50,7 @@ router.post(
     };
 
     res.json(formDetails);
-  }
+  },
 );
 
 export default router;
