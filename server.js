@@ -4,6 +4,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import axios from 'axios';
+import files from './controllers/files.js';
 import bodyParser from 'body-parser';
 import express from 'express';
 import { create, engine } from 'express-handlebars';
