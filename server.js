@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url';
 
 import axios from 'axios';
 import files from './controllers/files.js';
+import encryption from './controllers/encryption.js';
+import decryption from './controllers/decryption.js';
+import secrets from './controllers/secrets.js';
 import bodyParser from 'body-parser';
 import express from 'express';
 import { create, engine } from 'express-handlebars';
