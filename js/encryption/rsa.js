@@ -1,10 +1,10 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
 export default async function rsaEncrypt(content, publicKey) {
   if (!content) {
     return {
       error: true,
-      message: "Content is missing",
+      message: 'Content is missing',
     };
   }
 
@@ -13,18 +13,18 @@ export default async function rsaEncrypt(content, publicKey) {
       {
         key: publicKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: "sha256",
+        oaepHash: 'sha256',
       },
-      Buffer.from(content)
+      Buffer.from(content),
     );
     return {
       error: false,
-      cipher: rsaData.toString("base64"),
+      cipher: rsaData.toString('base64'),
     };
-  } catch (err) {
+  } catch (_) {
     return {
       error: true,
-      message: "RSA Encryption Failed",
+      message: 'RSA Encryption Failed',
     };
   }
 }

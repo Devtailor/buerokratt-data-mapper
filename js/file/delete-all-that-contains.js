@@ -1,22 +1,21 @@
-import path from "path";
-import fs from "fs";
-import { buildContentFilePath } from "../util/utils.js";
+import fs from 'fs';
+import path from 'path';
+
+import { buildContentFilePath } from '../util/utils.js';
 
 export default async function deleteAllThatContains(currentPath, keyword, res) {
   const folderPath = buildContentFilePath(currentPath);
 
   fs.readdir(folderPath, (err, files) => {
     if (err) {
-      res.status(500).json({ message: "Unable to read directory" });
+      res.status(500).json({ message: 'Unable to read directory' });
       return;
     }
 
     const filesToDelete = files.filter((file) => file.contains(keyword));
 
     if (filesToDelete.length === 0) {
-      res
-        .status(200)
-        .json({ message: "No files found with the specified prefix" });
+      res.status(200).json({ message: 'No files found with the specified prefix' });
       return;
     }
 
@@ -30,6 +29,6 @@ export default async function deleteAllThatContains(currentPath, keyword, res) {
       });
     });
 
-    res.status(201).json({ message: "Files deleted successfully" });
+    res.status(201).json({ message: 'Files deleted successfully' });
   });
 }

@@ -1,10 +1,11 @@
-import path from "path";
-import fs from "fs";
-import { parse as parseYmlToJson } from "yaml";
+import fs from 'fs';
+import path from 'path';
+
+import { parse as parseYmlToJson } from 'yaml';
 
 export const assignSecrets = (data, result) => {
   Object.keys(data).forEach((k) => {
-    if (typeof data[k] === "object") {
+    if (typeof data[k] === 'object') {
       result[k] = {};
       assignSecrets(data[k], result[k]);
     }
@@ -16,7 +17,7 @@ export const mapSecretToJson = (secrets) => {
   const result = {};
   secrets.forEach((secretPath) => {
     try {
-      const data = parseYmlToJson(fs.readFileSync(secretPath, "utf8"));
+      const data = parseYmlToJson(fs.readFileSync(secretPath, 'utf8'));
       assignSecrets(data, result);
     } catch (_) {
       return;
@@ -26,10 +27,8 @@ export const mapSecretToJson = (secrets) => {
 };
 
 export const buildContentFilePath = (fileName) => {
-  const normalizedPath = path
-    .normalize(fileName)
-    .replace(/^(\.\.(\/|\\|$))+/, "");
-  return path.join(process.env.CONTENT_FOLDER || "data", normalizedPath);
+  const normalizedPath = path.normalize(fileName).replace(/^(\.\.(\/|\\|$))+/, '');
+  return path.join(process.env.CONTENT_FOLDER || 'data', normalizedPath);
 };
 
 export const isValidFilename = (fileName) => {
@@ -37,15 +36,11 @@ export const isValidFilename = (fileName) => {
 };
 
 export const isValidFilePath = (filePath) => {
-  return (
-    filePath &&
-    isValidFilename(filePath) &&
-    path.normalize(filePath).includes("..") === false
-  );
+  return filePath && isValidFilename(filePath) && path.normalize(filePath).includes('..') === false;
 };
 
 export const getAllFiles = function (dirPath) {
-  const folder = path.join(process.env.CONTENT_FOLDER || "data", dirPath);
+  const folder = path.join(process.env.CONTENT_FOLDER || 'data', dirPath);
   return getAllFilesInsideFolder(folder);
 };
 
@@ -54,13 +49,10 @@ const getAllFilesInsideFolder = function (dirPath, arrayOfFiles) {
   arrayOfFiles = arrayOfFiles || [];
 
   files.forEach(function (file) {
-    if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-      arrayOfFiles = getAllFilesInsideFolder(
-        dirPath + "/" + file,
-        arrayOfFiles
-      );
+    if (fs.statSync(dirPath + '/' + file).isDirectory()) {
+      arrayOfFiles = getAllFilesInsideFolder(dirPath + '/' + file, arrayOfFiles);
     } else {
-      arrayOfFiles.push(path.join(dirPath, "/", file));
+      arrayOfFiles.push(path.join(dirPath, '/', file));
     }
   });
 
@@ -68,74 +60,76 @@ const getAllFilesInsideFolder = function (dirPath, arrayOfFiles) {
 };
 
 export const readFile = function (filePath) {
-  const data = fs.readFileSync(filePath, { encoding: "utf8" });
+  const data = fs.readFileSync(filePath, { encoding: 'utf8' });
   return Buffer.from(data).toString();
 };
 
 export const parseBoolean = (value) => {
-  return value?.toLowerCase() === "true";
+  return value?.toLowerCase() === 'true';
 };
 
 export const getUrl = (dir) => {
   let startIndex;
-  if (dir.includes("/POST")) {
-    startIndex = dir.indexOf("/POST") + "/POST".length;
+  if (dir.includes('/POST')) {
+    startIndex = dir.indexOf('/POST') + '/POST'.length;
   } else {
-    startIndex = dir.indexOf("/GET") + "/GET".length;
+    startIndex = dir.indexOf('/GET') + '/GET'.length;
   }
   return dir.substring(startIndex);
 };
 
 export const getHeadersMapping = (csv_type) => {
-  if (csv_type === "companies") {
+  if (csv_type === 'companies') {
     return {
-      Registrikood: "registry_code",
-      Nimi: "name",
-      Liik: "type",
-      "Registreeritud käibemaksukohustuslaste registrisse": "vat_register",
-      "EMTAK tegevusvaldkond, mis on EMTAKi struktuuris tähistatud tähtkoodiga":
-        "emtak_field_of_activity",
-      Maakond: "county",
-      "Riiklikud Maksud": "national_taxes",
-      "Tööjõumaksud Ja Maksed": "labor_taxes_and_payments",
-      Kaive: "turnover",
-      Tootajaid: "workers",
+      Registrikood: 'registry_code',
+      Nimi: 'name',
+      Liik: 'type',
+      'Registreeritud käibemaksukohustuslaste registrisse': 'vat_register',
+      'EMTAK tegevusvaldkond, mis on EMTAKi struktuuris tähistatud tähtkoodiga': 'emtak_field_of_activity',
+      Maakond: 'county',
+      'Riiklikud Maksud': 'national_taxes',
+      'Tööjõumaksud Ja Maksed': 'labor_taxes_and_payments',
+      Kaive: 'turnover',
+      Tootajaid: 'workers',
     };
-  } else if (csv_type === "municipalities") {
+  } else if (csv_type === 'municipalities') {
     return {
-      KUU: "month",
-      MAAKOND: "county",
-      "KOHALIK OMAVALITSUS": "local_government",
-      TEGEVUSALA: "field_of_activity",
-      "Keskmine palk sellel tegevusalal omavalitsuse territooriumil tegutsevates ettevõtetes (eurodes)":
-        "average_salary_in_field_of_activity_municipality",
-      "Keskmine palk Eestis (eurodes)": "average_salary_estonia",
-      "Keskmine palk sellel tegevusalal (eurodes)":
-        "average_salary_in_field_of_activity",
-      "Juriidiliste isikute arv omavalitsuses":
-        "legal_entities_count_municipality",
-      "Tegutsevate ettevõtete arv omavalitsuses":
-        "companies_count_municipality",
-      "Tegutsevate ettevõtete arv Eestis": "companies_count_estonia",
-      "Tegutsevate ettevõtete arv sellel tegevusalal":
-        "companies_count_in_field_of_activity",
-      "Töötajatega ettevõtete arv omavalitsuses":
-        "companies_count_with_employees_municipality",
-      "Töötajatega ettevõtete arv Eestis":
-        "companies_count_with_employees_estonia",
-      "Töötajatega ettevõtete arv sellel tegevusalal Eestis":
-        "companies_count_with_employees_in_field_of_activity_estonia",
-      "Deklaratsiooni KMD esitavate juriidiliste isikute arv omavalitsuses":
-        "municipality_legal_entities_kmd_count",
-      "Käive kokku (eurodes)": "total_turnover",
-      "Eksport  (eurodes)": "export",
-      "Tasumisele kuuluv käibemaks (eurodes)": "vat_payable",
-      "Omavalitsuse tööandjate deklaratsioonis TSD märgitud töötajate arv":
-        "municipal_employers_tsd_count",
-      "Omavalitsuse tööandjate  deklareeritud tööjõumaksud (eurodes)":
-        "labor_taxes_declared_by_municipal_employer",
+      KUU: 'month',
+      MAAKOND: 'county',
+      'KOHALIK OMAVALITSUS': 'local_government',
+      TEGEVUSALA: 'field_of_activity',
+      'Keskmine palk sellel tegevusalal omavalitsuse territooriumil tegutsevates ettevõtetes (eurodes)':
+        'average_salary_in_field_of_activity_municipality',
+      'Keskmine palk Eestis (eurodes)': 'average_salary_estonia',
+      'Keskmine palk sellel tegevusalal (eurodes)': 'average_salary_in_field_of_activity',
+      'Juriidiliste isikute arv omavalitsuses': 'legal_entities_count_municipality',
+      'Tegutsevate ettevõtete arv omavalitsuses': 'companies_count_municipality',
+      'Tegutsevate ettevõtete arv Eestis': 'companies_count_estonia',
+      'Tegutsevate ettevõtete arv sellel tegevusalal': 'companies_count_in_field_of_activity',
+      'Töötajatega ettevõtete arv omavalitsuses': 'companies_count_with_employees_municipality',
+      'Töötajatega ettevõtete arv Eestis': 'companies_count_with_employees_estonia',
+      'Töötajatega ettevõtete arv sellel tegevusalal Eestis':
+        'companies_count_with_employees_in_field_of_activity_estonia',
+      'Deklaratsiooni KMD esitavate juriidiliste isikute arv omavalitsuses': 'municipality_legal_entities_kmd_count',
+      'Käive kokku (eurodes)': 'total_turnover',
+      'Eksport  (eurodes)': 'export',
+      'Tasumisele kuuluv käibemaks (eurodes)': 'vat_payable',
+      'Omavalitsuse tööandjate deklaratsioonis TSD märgitud töötajate arv': 'municipal_employers_tsd_count',
+      'Omavalitsuse tööandjate  deklareeritud tööjõumaksud (eurodes)': 'labor_taxes_declared_by_municipal_employer',
     };
   } else {
     return {};
+  }
+};
+
+export const parseJwt = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Invalid JWT:', error);
+    return null;
   }
 };

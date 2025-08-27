@@ -1,3 +1,3 @@
-function myFunc() {
-    alert("Executed myFunc from /js/my/restful/url/myScript.js");
+function _myFunc() {
+  alert('Executed myFunc from /js/my/restful/url/myScript.js');
 }

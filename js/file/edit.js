@@ -1,11 +1,12 @@
-import replace from "replace-in-file";
-import { buildContentFilePath, isValidFilePath } from "../util/utils.js";
+import replace from 'replace-in-file';
+
+import { buildContentFilePath, isValidFilePath } from '../util/utils.js';
 
 export default async function editFile(file_path, from, to) {
   if (!isValidFilePath(file_path)) {
     return {
       error: true,
-      message: "File path contains illegal characters",
+      message: 'File path contains illegal characters',
     };
   }
 
@@ -26,12 +27,12 @@ export default async function editFile(file_path, from, to) {
 
     return {
       error: false,
-      message: "File edited successfully",
+      message: 'File edited successfully',
     };
-  } catch (err) {
+  } catch (_) {
     return {
       error: true,
-      message: "Unable to edit file",
+      message: 'Unable to edit file',
     };
   }
 }
