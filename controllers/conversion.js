@@ -319,6 +319,63 @@ router.post('/array-to-xlsx',
     res.json({ base64String: buffer.toString('base64') });
 });
 
+router.post('/chats-to-xlsx', async (req, res) => {
+  try {
+    const { columns, chatMessages, endedChats } = req.body;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Chats');
+
+    endedChats.forEach((chat, index) => {
+      worksheet.addRow([`Vestlus #${index + 1}`]);
+
+      const keys = (!columns || columns.length === 0)
+        ? Object.keys(chat)
+        : Object.keys(chat).filter(key => columns.includes(key));
+
+      const values = keys.map(k => chat[k] ?? '');
+
+      worksheet.addRow(keys);
+      worksheet.addRow(values);
+      worksheet.addRow(['Sõnumid']);
+
+      const headerRow = ['', 'Created', 'Bot', 'Client', 'CSA'];
+      worksheet.addRow(headerRow);
+
+      const relatedMessages = chatMessages
+        .filter(msg => msg.chatId === chat.id)
+        .sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
+
+      relatedMessages.forEach(msg => {
+        const row = ['', msg.created, '', '', ''];
+        if (msg.authorRole === 'buerokratt') {
+          row[2] = msg.content;
+        } else if (msg.authorRole === 'end-user') {
+          row[3] = msg.content;
+        } else {
+          row[4] = msg.content;
+        }
+        worksheet.addRow(row);
+      });
+
+      worksheet.addRow([]);
+    });
+
+    worksheet.columns.forEach((col) => {
+      let maxLength = 10;
+      col.eachCell({ includeEmpty: true }, (cell) => {
+        const length = cell.value ? cell.value.toString().length : 0;
+        if (length > maxLength) maxLength = length;
+      });
+      col.width = maxLength + 2;
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    res.json({ base64String: buffer.toString('base64') });
+  } catch (err) {
+    console.error('Excel export error:', err);
+    res.status(500).json({ error: 'Failed to export Excel' });
+  }
+});
 
 router.post("/xlsx-to-array", async (req, res) => {
   try {
