@@ -321,32 +321,30 @@ router.post('/array-to-xlsx',
 
 router.post('/chats-to-xlsx', async (req, res) => {
   try {
-    const { columns, chatMessages, endedChats } = req.body;
+    const { chatMessages, chatHeaders, chatRows, chatIds } = req.body;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
 
-    endedChats.forEach((chat, index) => {
+    chatIds.forEach((chatId, index) => {
       worksheet.addRow([`Vestlus #${index + 1}`]);
 
-      const keys = (!columns || columns.length === 0)
-        ? Object.keys(chat)
-        : Object.keys(chat).filter(key => columns.includes(key));
+      worksheet.addRow(chatHeaders);
 
-      const values = keys.map(k => chat[k] ?? '');
+      worksheet.addRow(chatRows[index]);
 
-      worksheet.addRow(keys);
-      worksheet.addRow(values);
       worksheet.addRow(['Sõnumid']);
 
       const headerRow = ['', 'Created', 'Bot', 'Client', 'CSA'];
       worksheet.addRow(headerRow);
 
       const relatedMessages = chatMessages
-        .filter(msg => msg.chatId === chat.id)
-        .sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
+        .filter((msg) => msg.chatId === chatId)
+        .sort(
+          (a, b) => new Date(a.created).getTime() - new Date(b.created).getTime()
+        );
 
-      relatedMessages.forEach(msg => {
+      relatedMessages.forEach((msg) => {
         const row = ['', msg.created, '', '', ''];
         if (msg.authorRole === 'buerokratt') {
           row[2] = msg.content;
@@ -369,6 +367,7 @@ router.post('/chats-to-xlsx', async (req, res) => {
       });
       col.width = maxLength + 2;
     });
+
     const buffer = await workbook.xlsx.writeBuffer();
     res.json({ base64String: buffer.toString('base64') });
   } catch (err) {
