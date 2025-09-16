@@ -15,8 +15,8 @@ async function getBrowser() {
       '--disable-extensions',
       '--disable-default-apps',
       '--disable-infobars',
-      '--headless=new'
-    ]
+      '--headless=new',
+    ],
   });
 
   return browser;
@@ -27,22 +27,22 @@ export async function convertHtmlToPdf(html) {
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "load", timeout: 0 });
+    await page.setContent(html, { waitUntil: 'load', timeout: 0 });
 
     const uintArray = await page.pdf({
-      format: "A4",
+      format: 'A4',
       printBackground: true,
       timeout: 0,
     });
-    const base64 = Buffer.from(uintArray).toString("base64");
+    const base64 = Buffer.from(uintArray).toString('base64');
 
     await page.close();
 
     return base64;
   } catch (error) {
-    console.error("convertHtmlToPdf: error", error);
+    console.error('convertHtmlToPdf: error', error);
     await browser.close();
-    console.debug("convertHtmlToPdf: closed browser on error")
+    console.debug('convertHtmlToPdf: closed browser on error');
     throw error;
   }
 }

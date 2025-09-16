@@ -1,46 +1,44 @@
-import express from "express";
-import { create, engine } from "express-handlebars";
-import setRateLimit from "express-rate-limit";
-import { body, matchedData, validationResult } from "express-validator";
-import Papa from "papaparse";
-import secrets from "./controllers/secrets.js";
-import fs from "fs";
-import files from "./controllers/files.js";
-import crypto from "crypto";
-import bodyParser from "body-parser";
-import 'dotenv/config'
+import crypto from 'crypto';
+import fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-import encryption from "./controllers/encryption.js";
-import decryption from "./controllers/decryption.js";
-import * as path from "path";
-import { fileURLToPath } from "url";
+import axios from 'axios';
+import files from './controllers/files.js';
+import encryption from './controllers/encryption.js';
+import decryption from './controllers/decryption.js';
+import secrets from './controllers/secrets.js';
+import bodyParser from 'body-parser';
+import express from 'express';
+import { create, engine } from 'express-handlebars';
+import setRateLimit from 'express-rate-limit';
+import { body, matchedData, validationResult } from 'express-validator';
+import Papa from 'papaparse';
 
-import sendMockEmail from "./js/email/sendMockEmail.js";
-import { convertHtmlToPdf } from "./js/generate/convertHtmlToPdf.js";
-import { generateMessagesTable } from "./js/convert/pdf.js";
-import * as helpers from "./lib/helpers.js";
-import {
-  buildContentFilePath,
-  getHeadersMapping,
-  parseBoolean,
-} from "./js/util/utils.js";
-import base64ToText from "./js/util/base64ToText.js";
-import conversion from "./controllers/conversion.js";
-import ruuter from "./controllers/ruuter.js";
-import merge from "./controllers/merge.js";
-import mergeYaml from "./js/file/mergeYaml.js";
-import readFullFile from "./js/file/read-file.js";
-import cron from "./controllers/cron.js";
-import object from "./controllers/object.js";
-import validate from "./controllers/validate.js";
-import utils from "./controllers/utils.js";
-import domain from "./controllers/domain.js";
-import forms from "./controllers/forms.js";
-import { requestLoggerMiddleware } from "./lib/requestLoggerMiddleware.js";
-import "./watchers/watcher.js";
+import certificates from './controllers/certificates.js';
+import conversion from './controllers/conversion.js';
+import cron from './controllers/cron.js';
+import domain from './controllers/domain.js';
+import forms from './controllers/forms.js';
+import merge from './controllers/merge.js';
+import object from './controllers/object.js';
+import ruuter from './controllers/ruuter.js';
+import utils from './controllers/utils.js';
+import validate from './controllers/validate.js';
+import { generateMessagesTable } from './js/convert/pdf.js';
+import sendMockEmail from './js/email/sendMockEmail.js';
+import mergeYaml from './js/file/mergeYaml.js';
+import readFullFile from './js/file/read-file.js';
+import generateButtonsList from './js/generate/buttonsList.js';
+import { convertHtmlToPdf } from './js/generate/convertHtmlToPdf.js';
+import base64ToText from './js/util/base64ToText.js';
+import { buildContentFilePath, getHeadersMapping, parseBoolean, parseJwt } from './js/util/utils.js';
+import * as helpers from './lib/helpers.js';
+import { requestLoggerMiddleware } from './lib/requestLoggerMiddleware.js';
+import './watchers/watcher.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
   modulusLength: 2048,
 });
 
@@ -48,51 +46,52 @@ const hbs = create({ helpers });
 
 const PORT = process.env.PORT || 3000;
 const REQUEST_SIZE_LIMIT = '100mb';
-const app = express().disable("x-powered-by");
+const app = express().disable('x-powered-by');
 const rateLimit = setRateLimit({
   // One minute
   windowMs: 60 * 1000,
   max: process.env.RATE_LIMIT_PER_MINUTE ?? 30,
-  message: "Too many requests",
+  message: 'Too many requests',
   headers: true,
   statusCode: 429,
 });
 
 const startTimestamp = new Date().getTime();
-const appName = process.env.APP_NAME || "DataMapper";
-const major = process.env.MAJOR || "unknown";
-const minor = process.env.MINOR || "unknown";
-const patch = process.env.PATCH || "unknown";
+const appName = process.env.APP_NAME || 'DataMapper';
+const major = process.env.MAJOR || 'unknown';
+const minor = process.env.MINOR || 'unknown';
+const patch = process.env.PATCH || 'unknown';
 
 app.use(bodyParser.json({ limit: REQUEST_SIZE_LIMIT }));
 app.use(bodyParser.text());
 app.use(requestLoggerMiddleware({ logger: console.log }));
 
-app.use("/file-manager", files);
-app.use("/conversion", conversion);
-app.use("/ruuter", ruuter);
-app.use("/merge", merge);
-app.use("/mergeYaml", mergeYaml);
-app.use("/cron", cron);
-app.use("/object", object);
-app.use("/validate", validate);
-app.use("/utils", utils);
-app.use("/domain", domain);
-app.use("/forms", forms);
+app.use('/file-manager', files);
+app.use('/conversion', conversion);
+app.use('/ruuter', ruuter);
+app.use('/merge', merge);
+app.use('/mergeYaml', mergeYaml);
+app.use('/cron', cron);
+app.use('/object', object);
+app.use('/validate', validate);
+app.use('/utils', utils);
+app.use('/domain', domain);
+app.use('/forms', forms);
+app.use('/certificates', certificates);
 app.use(express.urlencoded({ limit: REQUEST_SIZE_LIMIT, extended: true }));
 app.use(
-  "/encryption",
+  '/encryption',
   encryption({
     publicKey: publicKey,
     privateKey: privateKey,
-  })
+  }),
 );
 app.use(
-  "/decryption",
+  '/decryption',
   decryption({
     publicKey: publicKey,
     privateKey: privateKey,
-  })
+  }),
 );
 app.use(express.json({ limit: REQUEST_SIZE_LIMIT }));
 
@@ -104,34 +103,34 @@ const handled = (controller) => async (req, res, next) => {
   }
 };
 
-const EXTENSION = process.env.EXTENSION || ".handlebars";
+const EXTENSION = process.env.EXTENSION || '.handlebars';
 
 app.engine(
-  ".handlebars",
+  '.handlebars',
   engine({
-    layoutsDir: path.join(__dirname, "views/layouts"),
-  })
+    layoutsDir: path.join(__dirname, 'views/layouts'),
+  }),
 );
 
-app.engine(".hbs", hbs.engine);
+app.engine('.hbs', hbs.engine);
 
-app.set("views", ["./views", "./module/*/hbs/"]);
+app.set('views', ['./views', './module/*/hbs/']);
 
-app.use("/secrets", secrets);
+app.use('/secrets', secrets);
 
 app.get(
-  "/",
-  handled(async (req, res, next) => {
-    res.render(__dirname + "/views/home.handlebars", { title: "Home" });
-  })
+  '/',
+  handled(async (req, res, _next) => {
+    res.render(__dirname + '/views/home.handlebars', { title: 'Home' });
+  }),
 );
 
 const handleRender = (req, res, templatePath) => {
   res.render(templatePath, { ...req.body, helpers }, (err, response) => {
-    if (err) console.log("err:", err);
-    if (req.get("type") === "csv") {
+    if (err) console.log('err:', err);
+    if (req.get('type') === 'csv') {
       res.json({ response });
-    } else if (req.get("type") === "json") {
+    } else if (req.get('type') === 'json') {
       if (response === undefined) {
         res.json({
           error: `There was an error executing ${templatePath}`,
@@ -146,43 +145,31 @@ const handleRender = (req, res, templatePath) => {
 };
 
 app.post(
-  "/hbs/*",
+  '/hbs/*',
   rateLimit,
   handled(async (req, res) => {
-    const normalizedParams = path
-      .normalize(req.params[0])
-      .replace(/^(\.\.(\/|\\|$))+/, "");
-    const templatePath =
-      __dirname + "/views/" + normalizedParams + ".handlebars";
+    const normalizedParams = path.normalize(req.params[0]).replace(/^(\.\.(\/|\\|$))+/, '');
+    const templatePath = __dirname + '/views/' + normalizedParams + '.handlebars';
     handleRender(req, res, templatePath);
-  })
+  }),
 );
 
 app.post(
-  "/:project/hbs/*",
+  '/:project/hbs/*',
   handled(async (req, res) => {
-    const project = req.params["project"];
-    const normalizedParams = path
-      .normalize(req.params[0])
-      .replace(/^(\.\.(\/|\\|$))+/, "");
-    const templatePath =
-      __dirname + "/module/" + project + "/hbs/" + normalizedParams + EXTENSION;
+    const project = req.params['project'];
+    const normalizedParams = path.normalize(req.params[0]).replace(/^(\.\.(\/|\\|$))+/, '');
+    const templatePath = __dirname + '/module/' + project + '/hbs/' + normalizedParams + EXTENSION;
     handleRender(req, res, templatePath);
-  })
+  }),
 );
 
 app.post(
-  "/js/convert/pdf",
+  '/js/convert/pdf',
   [
-    body("messages")
-      .isArray()
-      .withMessage("messages is required and must be an array"),
-    body("csaTitleVisible")
-      .isString()
-      .withMessage("csaTitleVisible is required and must be a string"),
-    body("csaNameVisible")
-      .isString()
-      .withMessage("csaNameVisible is required and must be a string"),
+    body('messages').isArray().withMessage('messages is required and must be an array'),
+    body('csaTitleVisible').isString().withMessage('csaTitleVisible is required and must be a string'),
+    body('csaNameVisible').isString().withMessage('csaNameVisible is required and must be a string'),
   ],
   rateLimit,
   async (req, res) => {
@@ -193,35 +180,34 @@ app.post(
 
     const { messages, csaTitleVisible, csaNameVisible } = matchedData(req);
 
-    const template = fs
-      .readFileSync(__dirname + "/views/pdf.handlebars")
-      .toString();
+    const template = fs.readFileSync(__dirname + '/views/pdf.handlebars').toString();
 
-    const html = generateMessagesTable(
-      template,
-      messages,
-      parseBoolean(csaTitleVisible),
-      parseBoolean(csaNameVisible)
-    );
+    const html = generateMessagesTable(template, messages, parseBoolean(csaTitleVisible), parseBoolean(csaNameVisible));
 
     try {
       res.json({ response: await convertHtmlToPdf(html) });
-    } catch (error) {
-      res.status(500).json({message: "Error generating PDF"});
+    } catch (_) {
+      res.status(500).json({ message: 'Error generating PDF' });
     }
-  }
+  },
 );
 
+app.post('/generate/buttons-list', (req, res) => {
+  const response = generateButtonsList(
+    req.body.list,
+    req.body.service_name,
+    req.body.key,
+    req.body.payload_prefix ?? '',
+    req.body.payload_keys ?? [],
+  );
+  res.status(200).json({ response });
+});
+
 app.post(
-  "/parse-csv-to-opensearch-data",
+  '/parse-csv-to-opensearch-data',
   [
-    body("file_path")
-      .isString()
-      .withMessage("file_path is required and must be a string"),
-    body("csv_type")
-      .isString()
-      .optional()
-      .withMessage("csv_type must be a string"),
+    body('file_path').isString().withMessage('file_path is required and must be a string'),
+    body('csv_type').isString().optional().withMessage('csv_type must be a string'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -236,8 +222,8 @@ app.post(
     const headersMapping = getHeadersMapping(csv_type);
 
     // Needed when csv second row is a header
-    if (csv_type === "municipalities") {
-      file = file.split("\n").slice(1).join("\n");
+    if (csv_type === 'municipalities') {
+      file = file.split('\n').slice(1).join('\n');
     }
 
     const result = Papa.parse(file, {
@@ -252,42 +238,91 @@ app.post(
       },
     });
 
-    let bulkData = "";
+    let bulkData = '';
     result.data.forEach((item) => {
-      bulkData += JSON.stringify({ index: {} }) + "\n";
-      bulkData += JSON.stringify(item) + "\n";
+      bulkData += JSON.stringify({ index: {} }) + '\n';
+      bulkData += JSON.stringify(item) + '\n';
     });
     res.send(bulkData);
-  }
+  },
 );
 
-app.get("/js/*", rateLimit, (req, res) => {
-  const normalizedPath = path
-    .normalize(req.path)
-    .replace(/^(\.\.(\/|\\|$))+/, "");
-  const resolvedPath = path.join(__dirname, normalizedPath + ".js");
-  res.contentType("text/plain").send(fs.readFileSync(resolvedPath).toString());
+app.get('/js/*', rateLimit, (req, res) => {
+  const normalizedPath = path.normalize(req.path).replace(/^(\.\.(\/|\\|$))+/, '');
+  const resolvedPath = path.join(__dirname, normalizedPath + '.js');
+  res.contentType('text/plain').send(fs.readFileSync(resolvedPath).toString());
 });
 
 // NOTE: This service is only for testing purposes. Needs to be replaced with actual mail service.
-app.post("/js/email/*", (req, res) => {
+app.post('/js/email/*', (req, res) => {
   const { to, subject, text } = req.body;
   try {
     sendMockEmail(to, subject, text);
-    res.contentType("text/plain").send(`email sent to: ${to}`);
+    res.contentType('text/plain').send(`email sent to: ${to}`);
   } catch (err) {
     res.errored(err);
   }
 });
 
-app.post("/example/post", (req, res) => {
+app.post('/example/post', (req, res) => {
   console.log(`POST endpoint received ${JSON.stringify(req.body)}`);
   res.status(200).json({ message: `received value ${req.body.name}` });
 });
 
-app.get("/status", (req, res) => res.status(200).send("ok"));
+app.post(
+  '/tmp/smax-auth',
+  [
+    body('Login').isString().withMessage('Login is required and must be a string'),
+    body('Password').isString().withMessage('Password is required and must be a string'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { Login, Password } = matchedData(req);
 
-app.get("/healthz", (req, res) => {
+    if (!process.env.SMAX_AUTHENTICATION_URL) {
+      return res.status(500).json({ error: `SMAX_AUTHENTICATION_URL is not set` });
+    }
+
+    try {
+      const { data } = await axios.post(
+        process.env.SMAX_AUTHENTICATION_URL,
+        { Login, Password },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      res.json({ token: data });
+    } catch (_) {
+      return res.status(401).json({ error: `Unauthorized` });
+    }
+  },
+);
+
+app.post(
+  '/extract-smax-email',
+  [body('jwtToken').isString().withMessage('jwtToken is required and must be a string')],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { jwtToken } = matchedData(req);
+    const payload = parseJwt(jwtToken);
+    if (!payload || !payload.prn) {
+      return res.status(400).json({ error: "Invalid JWT or 'prn' property missing" });
+    }
+
+    res.json({ email: payload.prn });
+  },
+);
+
+app.get('/status', (req, res) => res.status(200).send('ok'));
+
+app.get('/healthz', (req, res) => {
   res.status(200).send({
     appName,
     version: `v${major}.${minor}.${patch}`,
@@ -298,5 +333,5 @@ app.get("/healthz", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log("Nodejs server running on http://localhost:%s", PORT);
+  console.log('Nodejs server running on http://localhost:%s', PORT);
 });
