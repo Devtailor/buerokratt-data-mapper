@@ -4,6 +4,7 @@ import aesEncrypt from '../js/encryption/aes.js';
 import base64Encrypt from '../js/encryption/base64.js';
 import rsaEncrypt from '../js/encryption/rsa.js';
 import tripleDesEncrypt from '../js/encryption/triple-des.js';
+import stringToBase64Encrypt from '../js/encryption/stringTobase64.js';
 
 const wrapper = function (config) {
   const router = express.Router();
@@ -21,6 +22,21 @@ const wrapper = function (config) {
   router.post('/base64', async (req, res) => {
     const result = await base64Encrypt(req.body.content);
     return res.status(result.error ? 400 : 200).json(result);
+  });
+
+  router.post('/object/base64', async (req, res) => {
+    const objects = req.body;
+
+    const entries = await Promise.all(
+      Object.entries(objects).map(async ([key, value]) => {
+        const result = await stringToBase64Encrypt(value);
+        return [key, result.cipher];
+      })
+    );
+
+    const converted = Object.fromEntries(entries);
+
+    res.json(converted);
   });
 
   router.post('/rsa', async (req, res) => {
