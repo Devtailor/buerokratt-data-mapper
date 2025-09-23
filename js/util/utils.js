@@ -133,3 +133,20 @@ export const parseJwt = (token) => {
     return null;
   }
 };
+
+export const compareModelIntentReports = (oldModelReport, newModelReport) => {
+  // Keys to exclude from intent comparison (summary metrics)
+  const excludeKeys = ['accuracy', 'macro avg', 'weighted avg', 'micro avg'];
+  
+  const oldModelIntents = Object.keys(oldModelReport).filter(key => !excludeKeys.includes(key));
+  const newModelIntents = Object.keys(newModelReport).filter(key => !excludeKeys.includes(key));
+  
+  const newModelUniqueIntents = newModelIntents.filter(intent => !oldModelIntents.includes(intent));
+  const oldModelUniqueIntents = oldModelIntents.filter(intent => !newModelIntents.includes(intent));
+  
+  return {
+    newModelUniqueIntents,
+    oldModelUniqueIntents
+  };
+};
+
