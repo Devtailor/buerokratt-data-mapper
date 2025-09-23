@@ -79,7 +79,8 @@ router.post('/compare-model-intent-reports', async (req, res) => {
       });
     }
 
-    if (typeof oldModelReport !== 'object' || typeof newModelReport !== 'object') {
+    if (typeof oldModelReport !== 'object' || typeof newModelReport !== 'object' || 
+        Array.isArray(oldModelReport) || Array.isArray(newModelReport)) {
       return res.status(400).json({ 
         error: 'Both oldModelReport and newModelReport must be objects' 
       });
