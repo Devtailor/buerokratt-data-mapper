@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import { body, matchedData, validationResult } from 'express-validator';
 
+import { compareModelIntentReports } from '../js/util/utils.js';
+
 const router = express.Router();
 
 router.post(
@@ -65,6 +67,32 @@ router.post('/map-domains-data', async (req, res) => {
     }));
 
   return res.json(result);
+});
+
+router.post('/compare-model-intent-reports', async (req, res) => {
+  try {
+    const { oldModelReport, newModelReport } = req.body;
+
+    if (!oldModelReport || !newModelReport) {
+      return res.status(400).json({ 
+        error: 'Both oldModelReport and newModelReport are required' 
+      });
+    }
+
+    if (typeof oldModelReport !== 'object' || typeof newModelReport !== 'object') {
+      return res.status(400).json({ 
+        error: 'Both oldModelReport and newModelReport must be objects' 
+      });
+    }
+
+    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    return res.json(result);
+  } catch (error) {
+    console.error('Error comparing model intents:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error while comparing model intents' 
+    });
+  }
 });
 
 export default router;
