@@ -110,7 +110,6 @@ router.post('/get-intents-from-rule-steps', async (req, res) => {
       });
     }
 
-    // Validate that steps is either an array or an object
     if (!Array.isArray(steps) && typeof steps !== 'object') {
       return res.status(400).json({
         error: 'steps must be either an array or an object',
