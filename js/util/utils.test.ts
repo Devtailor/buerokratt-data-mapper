@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { compareIntents, extractIntentsFromModelReport, getIntentsFromRuleSteps } from './utils.js';
+import { compareArrays, extractIntentsFromModelReport, getIntentsFromRuleSteps } from './utils.js';
 
 describe('extractIntentsFromModelReport', () => {
   it('should extract intents from model report excluding summary metrics', () => {
@@ -94,10 +94,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual(['common_new_intent', 'another_new_intent']);
-    expect(result.oldModelUniqueIntents).toEqual([]);
+    expect(result.newUniqueItems).toEqual(['common_new_intent', 'another_new_intent']);
+    expect(result.oldUniqueItems).toEqual([]);
   });
 
   it('should identify unique intents in old model', () => {
@@ -149,10 +149,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual([]);
-    expect(result.oldModelUniqueIntents).toEqual(['common_old_intent', 'another_old_intent']);
+    expect(result.newUniqueItems).toEqual([]);
+    expect(result.oldUniqueItems).toEqual(['common_old_intent', 'another_old_intent']);
   });
 
   it('should identify unique intents in both models', () => {
@@ -204,10 +204,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual(['common_new_intent']);
-    expect(result.oldModelUniqueIntents).toEqual(['common_old_intent']);
+    expect(result.newUniqueItems).toEqual(['common_new_intent']);
+    expect(result.oldUniqueItems).toEqual(['common_old_intent']);
   });
 
   it('should return empty arrays when models have identical intents', () => {
@@ -259,10 +259,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual([]);
-    expect(result.oldModelUniqueIntents).toEqual([]);
+    expect(result.newUniqueItems).toEqual([]);
+    expect(result.oldUniqueItems).toEqual([]);
   });
 
   it('should exclude summary metrics from comparison', () => {
@@ -326,10 +326,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual([]);
-    expect(result.oldModelUniqueIntents).toEqual([]);
+    expect(result.newUniqueItems).toEqual([]);
+    expect(result.oldUniqueItems).toEqual([]);
   });
 
   it('should handle empty reports', () => {
@@ -347,10 +347,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual([]);
-    expect(result.oldModelUniqueIntents).toEqual([]);
+    expect(result.newUniqueItems).toEqual([]);
+    expect(result.oldUniqueItems).toEqual([]);
   });
 
   it('should handle reports with only summary metrics', () => {
@@ -372,10 +372,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual([]);
-    expect(result.oldModelUniqueIntents).toEqual([]);
+    expect(result.newUniqueItems).toEqual([]);
+    expect(result.oldUniqueItems).toEqual([]);
   });
 
   it('should handle reports with mixed intent names and summary metrics', () => {
@@ -469,10 +469,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual(['common_teenus_ilm', 'common_klienditeenindajale_suunamine']);
-    expect(result.oldModelUniqueIntents).toEqual(['serviceDemo']);
+    expect(result.newUniqueItems).toEqual(['common_teenus_ilm', 'common_klienditeenindajale_suunamine']);
+    expect(result.oldUniqueItems).toEqual(['serviceDemo']);
   });
 
   it('should handle case sensitivity correctly', () => {
@@ -500,10 +500,10 @@ describe('compareModelIntents', () => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
 
-    expect(result.newModelUniqueIntents).toEqual(['common_service_intent']);
-    expect(result.oldModelUniqueIntents).toEqual(['Common_Service_Intent']);
+    expect(result.newUniqueItems).toEqual(['common_service_intent']);
+    expect(result.oldUniqueItems).toEqual(['Common_Service_Intent']);
   });
 });
 

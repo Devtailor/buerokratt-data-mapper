@@ -139,13 +139,13 @@ export const extractIntentsFromModelReport = (modelReport) => {
   return Object.keys(modelReport).filter((key) => !excludeKeys.includes(key));
 };
 
-export const compareIntents = (oldIntents, newIntents) => {
-  const newModelUniqueIntents = newIntents.filter((intent) => !oldIntents.includes(intent));
-  const oldModelUniqueIntents = oldIntents.filter((intent) => !newIntents.includes(intent));
+export const compareArrays = (oldArray, newArray) => {
+  const newUniqueItems = newArray.filter((item) => !oldArray.includes(item));
+  const oldUniqueItems = oldArray.filter((item) => !newArray.includes(item));
 
   return {
-    newModelUniqueIntents,
-    oldModelUniqueIntents,
+    newUniqueItems,
+    oldUniqueItems,
   };
 };
 

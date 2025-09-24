@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import { body, matchedData, validationResult } from 'express-validator';
 
-import { compareIntents, extractIntentsFromModelReport, getIntentsFromRuleSteps } from '../js/util/utils.js';
+import { compareArrays, extractIntentsFromModelReport, getIntentsFromRuleSteps } from '../js/util/utils.js';
 
 const router = express.Router();
 
@@ -93,7 +93,7 @@ router.post('/compare-model-intent-reports', async (req, res) => {
     const oldIntents = extractIntentsFromModelReport(oldModelReport);
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldIntents, newIntents);
     return res.json(result);
   } catch (error) {
     console.error('Error comparing model intents:', error);
@@ -103,28 +103,28 @@ router.post('/compare-model-intent-reports', async (req, res) => {
   }
 });
 
-router.post('/compare-intents', async (req, res) => {
+router.post('/compare-arrays', async (req, res) => {
   try {
-    const { oldIntents, newIntents } = req.body;
+    const { oldArray, newArray } = req.body;
 
-    if (!oldIntents || !newIntents) {
+    if (!oldArray || !newArray) {
       return res.status(400).json({
-        error: 'Both oldIntents and newIntents are required',
+        error: 'Both oldArray and newArray are required',
       });
     }
 
-    if (!Array.isArray(oldIntents) || !Array.isArray(newIntents)) {
+    if (!Array.isArray(oldArray) || !Array.isArray(newArray)) {
       return res.status(400).json({
-        error: 'Both oldIntents and newIntents must be arrays',
+        error: 'Both oldArray and newArray must be arrays',
       });
     }
 
-    const result = compareIntents(oldIntents, newIntents);
+    const result = compareArrays(oldArray, newArray);
     return res.json(result);
   } catch (error) {
-    console.error('Error comparing intents:', error);
+    console.error('Error comparing arrays:', error);
     return res.status(500).json({
-      error: 'Internal server error while comparing intents',
+      error: 'Internal server error while comparing arrays',
     });
   }
 });

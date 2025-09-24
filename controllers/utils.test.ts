@@ -14,55 +14,55 @@ app.use('/utils', utilsRouter);
 // Helper function to avoid repetitive type assertions
 const makeRequest = (): TestAgent => request(app as App);
 
-describe('POST /utils/compare-intents', () => {
-  it('should return 400 when oldIntents is missing', async () => {
+describe('POST /utils/compare-arrays', () => {
+  it('should return 400 when oldArray is missing', async () => {
     const response = await makeRequest()
-      .post('/utils/compare-intents')
-      .send({ newIntents: ['intent1', 'intent2'] });
+      .post('/utils/compare-arrays')
+      .send({ newArray: ['item1', 'item2'] });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Both oldIntents and newIntents are required');
+    expect(response.body.error).toBe('Both oldArray and newArray are required');
   });
 
-  it('should return 400 when newIntents is missing', async () => {
+  it('should return 400 when newArray is missing', async () => {
     const response = await makeRequest()
-      .post('/utils/compare-intents')
-      .send({ oldIntents: ['intent1', 'intent2'] });
+      .post('/utils/compare-arrays')
+      .send({ oldArray: ['item1', 'item2'] });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Both oldIntents and newIntents are required');
+    expect(response.body.error).toBe('Both oldArray and newArray are required');
   });
 
-  it('should return 400 when oldIntents is not an array', async () => {
+  it('should return 400 when oldArray is not an array', async () => {
     const response = await makeRequest()
-      .post('/utils/compare-intents')
-      .send({ oldIntents: 'not an array', newIntents: ['intent1', 'intent2'] });
+      .post('/utils/compare-arrays')
+      .send({ oldArray: 'not an array', newArray: ['item1', 'item2'] });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Both oldIntents and newIntents must be arrays');
+    expect(response.body.error).toBe('Both oldArray and newArray must be arrays');
   });
 
-  it('should return 400 when newIntents is not an array', async () => {
+  it('should return 400 when newArray is not an array', async () => {
     const response = await makeRequest()
-      .post('/utils/compare-intents')
-      .send({ oldIntents: ['intent1', 'intent2'], newIntents: 'not an array' });
+      .post('/utils/compare-arrays')
+      .send({ oldArray: ['item1', 'item2'], newArray: 'not an array' });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Both oldIntents and newIntents must be arrays');
+    expect(response.body.error).toBe('Both oldArray and newArray must be arrays');
   });
 
-  it('should compare intents and return unique intents', async () => {
+  it('should compare arrays and return unique items', async () => {
     const response = await makeRequest()
-      .post('/utils/compare-intents')
+      .post('/utils/compare-arrays')
       .send({
-        oldIntents: ['intent1', 'intent2', 'intent3'],
-        newIntents: ['intent2', 'intent3', 'intent4', 'intent5'],
+        oldArray: ['item1', 'item2', 'item3'],
+        newArray: ['item2', 'item3', 'item4', 'item5'],
       });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      newModelUniqueIntents: ['intent4', 'intent5'],
-      oldModelUniqueIntents: ['intent1'],
+      newUniqueItems: ['item4', 'item5'],
+      oldUniqueItems: ['item1'],
     });
   });
 });
@@ -306,8 +306,8 @@ describe('POST /utils/compare-model-intent-reports', () => {
       .expect(200);
 
     expect(response.body).toEqual({
-      newModelUniqueIntents: ['common_teenus_ilm', 'common_klienditeenindajale_suunamine'],
-      oldModelUniqueIntents: ['serviceDemo'],
+      newUniqueItems: ['common_teenus_ilm', 'common_klienditeenindajale_suunamine'],
+      oldUniqueItems: ['serviceDemo'],
     });
   });
 });
