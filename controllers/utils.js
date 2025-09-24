@@ -94,7 +94,10 @@ router.post('/compare-model-intent-reports', async (req, res) => {
     const newIntents = extractIntentsFromModelReport(newModelReport);
 
     const result = compareArrays(oldIntents, newIntents);
-    return res.json(result);
+    return res.json({
+      newModelUniqueIntents: result.newUniqueItems,
+      oldModelUniqueIntents: result.oldUniqueItems,
+    });
   } catch (error) {
     console.error('Error comparing model intents:', error);
     return res.status(500).json({
