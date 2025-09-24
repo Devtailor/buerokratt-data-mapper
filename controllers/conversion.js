@@ -342,9 +342,7 @@ router.post('/chats-to-xlsx', async (req, res) => {
 
       const relatedMessages = chatMessages
         .filter((msg) => msg.chatId === chatId)
-        .sort(
-          (a, b) => new Date(a.created).getTime() - new Date(b.created).getTime()
-        );
+        .sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
 
       relatedMessages.forEach((msg) => {
         const row = ['', msg.created, '', '', ''];
@@ -378,7 +376,7 @@ router.post('/chats-to-xlsx', async (req, res) => {
   }
 });
 
-router.post("/xlsx-to-array", async (req, res) => {
+router.post('/xlsx-to-array', async (req, res) => {
   try {
     if (!req.body.file) {
       return res.status(400).json({ error: 'No file uploaded' });
