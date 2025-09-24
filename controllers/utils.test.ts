@@ -306,8 +306,8 @@ describe('POST /utils/compare-model-intent-reports', () => {
       .expect(200);
 
     expect(response.body).toEqual({
-      newUniqueItems: ['common_teenus_ilm', 'common_klienditeenindajale_suunamine'],
-      oldUniqueItems: ['serviceDemo'],
+      newModelUniqueIntents: ['common_teenus_ilm', 'common_klienditeenindajale_suunamine'],
+      oldModelUniqueIntents: ['serviceDemo'],
     });
   });
 });
