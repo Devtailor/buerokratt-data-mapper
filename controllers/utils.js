@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import { body, matchedData, validationResult } from 'express-validator';
 
-import { compareModelIntentReports, getIntentsFromRuleSteps } from '../js/util/utils.js';
+import { compareIntents, extractIntentsFromModelReport, getIntentsFromRuleSteps } from '../js/util/utils.js';
 
 const router = express.Router();
 
@@ -90,7 +90,10 @@ router.post('/compare-model-intent-reports', async (req, res) => {
       });
     }
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
     return res.json(result);
   } catch (error) {
     console.error('Error comparing model intents:', error);

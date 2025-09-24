@@ -1,6 +1,36 @@
 import { describe, expect, it } from 'vitest';
 
-import { compareModelIntentReports, getIntentsFromRuleSteps } from './utils.js';
+import { compareIntents, extractIntentsFromModelReport, getIntentsFromRuleSteps } from './utils.js';
+
+describe('extractIntentsFromModelReport', () => {
+  it('should extract intents from model report excluding summary metrics', () => {
+    const modelReport = {
+      intent1: { precision: 0.8, recall: 0.9 },
+      intent2: { precision: 0.7, recall: 0.8 },
+      accuracy: 0.85,
+      'macro avg': { precision: 0.75, recall: 0.85 },
+      'weighted avg': { precision: 0.76, recall: 0.86 },
+      'micro avg': { precision: 0.77, recall: 0.87 },
+    };
+
+    const result = extractIntentsFromModelReport(modelReport);
+
+    expect(result).toEqual(['intent1', 'intent2']);
+  });
+
+  it('should return empty array for model report with only summary metrics', () => {
+    const modelReport = {
+      accuracy: 0.85,
+      'macro avg': { precision: 0.75, recall: 0.85 },
+      'weighted avg': { precision: 0.76, recall: 0.86 },
+      'micro avg': { precision: 0.77, recall: 0.87 },
+    };
+
+    const result = extractIntentsFromModelReport(modelReport);
+
+    expect(result).toEqual([]);
+  });
+});
 
 describe('compareModelIntents', () => {
   it('should identify unique intents in new model', () => {
@@ -60,7 +90,11 @@ describe('compareModelIntents', () => {
       },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual(['common_new_intent', 'another_new_intent']);
     expect(result.oldModelUniqueIntents).toEqual([]);
@@ -111,7 +145,11 @@ describe('compareModelIntents', () => {
       },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual([]);
     expect(result.oldModelUniqueIntents).toEqual(['common_old_intent', 'another_old_intent']);
@@ -162,7 +200,11 @@ describe('compareModelIntents', () => {
       },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual(['common_new_intent']);
     expect(result.oldModelUniqueIntents).toEqual(['common_old_intent']);
@@ -213,7 +255,11 @@ describe('compareModelIntents', () => {
       },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual([]);
     expect(result.oldModelUniqueIntents).toEqual([]);
@@ -276,7 +322,11 @@ describe('compareModelIntents', () => {
       },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual([]);
     expect(result.oldModelUniqueIntents).toEqual([]);
@@ -293,7 +343,11 @@ describe('compareModelIntents', () => {
       'macro avg': { precision: 0.8, recall: 0.75, f1_score: 0.77, support: 200 },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual([]);
     expect(result.oldModelUniqueIntents).toEqual([]);
@@ -314,7 +368,11 @@ describe('compareModelIntents', () => {
       'micro avg': { precision: 0.85, recall: 0.85, f1_score: 0.85, support: 200 },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual([]);
     expect(result.oldModelUniqueIntents).toEqual([]);
@@ -407,7 +465,11 @@ describe('compareModelIntents', () => {
       },
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual(['common_teenus_ilm', 'common_klienditeenindajale_suunamine']);
     expect(result.oldModelUniqueIntents).toEqual(['serviceDemo']);
@@ -434,7 +496,11 @@ describe('compareModelIntents', () => {
       accuracy: 0.85,
     };
 
-    const result = compareModelIntentReports(oldModelReport, newModelReport);
+    // Extract intent arrays from model reports
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareIntents(oldIntents, newIntents);
 
     expect(result.newModelUniqueIntents).toEqual(['common_service_intent']);
     expect(result.oldModelUniqueIntents).toEqual(['Common_Service_Intent']);
