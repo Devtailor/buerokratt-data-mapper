@@ -14,6 +14,59 @@ app.use('/utils', utilsRouter);
 // Helper function to avoid repetitive type assertions
 const makeRequest = (): TestAgent => request(app as App);
 
+describe('POST /utils/compare-intents', () => {
+  it('should return 400 when oldIntents is missing', async () => {
+    const response = await makeRequest()
+      .post('/utils/compare-intents')
+      .send({ newIntents: ['intent1', 'intent2'] });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Both oldIntents and newIntents are required');
+  });
+
+  it('should return 400 when newIntents is missing', async () => {
+    const response = await makeRequest()
+      .post('/utils/compare-intents')
+      .send({ oldIntents: ['intent1', 'intent2'] });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Both oldIntents and newIntents are required');
+  });
+
+  it('should return 400 when oldIntents is not an array', async () => {
+    const response = await makeRequest()
+      .post('/utils/compare-intents')
+      .send({ oldIntents: 'not an array', newIntents: ['intent1', 'intent2'] });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Both oldIntents and newIntents must be arrays');
+  });
+
+  it('should return 400 when newIntents is not an array', async () => {
+    const response = await makeRequest()
+      .post('/utils/compare-intents')
+      .send({ oldIntents: ['intent1', 'intent2'], newIntents: 'not an array' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Both oldIntents and newIntents must be arrays');
+  });
+
+  it('should compare intents and return unique intents', async () => {
+    const response = await makeRequest()
+      .post('/utils/compare-intents')
+      .send({
+        oldIntents: ['intent1', 'intent2', 'intent3'],
+        newIntents: ['intent2', 'intent3', 'intent4', 'intent5'],
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      newModelUniqueIntents: ['intent4', 'intent5'],
+      oldModelUniqueIntents: ['intent1'],
+    });
+  });
+});
+
 describe('POST /utils/compare-model-intent-reports', () => {
   it('should return 400 when oldModelReport is missing', async () => {
     const response = await makeRequest()
@@ -303,8 +356,6 @@ describe('POST /get-intents-from-rule-steps', () => {
 
     const response = await makeRequest().post('/utils/get-intents-from-rule-steps').send({ steps }).expect(200);
 
-    expect(response.body).toEqual({
-      intents: ['common_ask_csa', 'common_greeting'],
-    });
+    expect(response.body).toEqual(['common_ask_csa', 'common_greeting']);
   });
 });

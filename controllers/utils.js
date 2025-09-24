@@ -103,6 +103,32 @@ router.post('/compare-model-intent-reports', async (req, res) => {
   }
 });
 
+router.post('/compare-intents', async (req, res) => {
+  try {
+    const { oldIntents, newIntents } = req.body;
+
+    if (!oldIntents || !newIntents) {
+      return res.status(400).json({
+        error: 'Both oldIntents and newIntents are required',
+      });
+    }
+
+    if (!Array.isArray(oldIntents) || !Array.isArray(newIntents)) {
+      return res.status(400).json({
+        error: 'Both oldIntents and newIntents must be arrays',
+      });
+    }
+
+    const result = compareIntents(oldIntents, newIntents);
+    return res.json(result);
+  } catch (error) {
+    console.error('Error comparing intents:', error);
+    return res.status(500).json({
+      error: 'Internal server error while comparing intents',
+    });
+  }
+});
+
 router.post('/get-intents-from-rule-steps', async (req, res) => {
   try {
     const { steps } = req.body;
