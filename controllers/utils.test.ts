@@ -258,3 +258,53 @@ describe('POST /utils/compare-model-intent-reports', () => {
     });
   });
 });
+
+describe('POST /get-intents-from-rule-steps', () => {
+  it('should return 400 when steps parameter is missing', async () => {
+    const response = await makeRequest().post('/utils/get-intents-from-rule-steps').send({}).expect(400);
+
+    expect(response.body).toEqual({
+      error: 'steps parameter is required',
+    });
+  });
+
+  it('should return 400 when steps parameter is null', async () => {
+    const response = await makeRequest().post('/utils/get-intents-from-rule-steps').send({ steps: null }).expect(400);
+
+    expect(response.body).toEqual({
+      error: 'steps parameter is required',
+    });
+  });
+
+  it('should return 400 when steps is not an array or object', async () => {
+    const response = await makeRequest()
+      .post('/utils/get-intents-from-rule-steps')
+      .send({ steps: 'invalid' })
+      .expect(400);
+
+    expect(response.body).toEqual({
+      error: 'steps must be either an array or an object',
+    });
+  });
+
+  it('should handle complex nested objects in steps', async () => {
+    const steps = [
+      {
+        intent: 'common_ask_csa',
+        entities: [{ name: 'entity1', value: 'value1' }],
+        metadata: { source: 'user' },
+      },
+      {
+        intent: 'common_greeting',
+        entities: [],
+        metadata: { source: 'system' },
+      },
+    ];
+
+    const response = await makeRequest().post('/utils/get-intents-from-rule-steps').send({ steps }).expect(200);
+
+    expect(response.body).toEqual({
+      intents: ['common_ask_csa', 'common_greeting'],
+    });
+  });
+});

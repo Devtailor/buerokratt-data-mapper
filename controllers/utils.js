@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import { body, matchedData, validationResult } from 'express-validator';
 
-import { compareModelIntentReports } from '../js/util/utils.js';
+import { compareModelIntentReports, getIntentsFromRuleSteps } from '../js/util/utils.js';
 
 const router = express.Router();
 
@@ -74,15 +74,19 @@ router.post('/compare-model-intent-reports', async (req, res) => {
     const { oldModelReport, newModelReport } = req.body;
 
     if (!oldModelReport || !newModelReport) {
-      return res.status(400).json({ 
-        error: 'Both oldModelReport and newModelReport are required' 
+      return res.status(400).json({
+        error: 'Both oldModelReport and newModelReport are required',
       });
     }
 
-    if (typeof oldModelReport !== 'object' || typeof newModelReport !== 'object' || 
-        Array.isArray(oldModelReport) || Array.isArray(newModelReport)) {
-      return res.status(400).json({ 
-        error: 'Both oldModelReport and newModelReport must be objects' 
+    if (
+      typeof oldModelReport !== 'object' ||
+      typeof newModelReport !== 'object' ||
+      Array.isArray(oldModelReport) ||
+      Array.isArray(newModelReport)
+    ) {
+      return res.status(400).json({
+        error: 'Both oldModelReport and newModelReport must be objects',
       });
     }
 
@@ -90,8 +94,35 @@ router.post('/compare-model-intent-reports', async (req, res) => {
     return res.json(result);
   } catch (error) {
     console.error('Error comparing model intents:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error while comparing model intents' 
+    return res.status(500).json({
+      error: 'Internal server error while comparing model intents',
+    });
+  }
+});
+
+router.post('/get-intents-from-rule-steps', async (req, res) => {
+  try {
+    const { steps } = req.body;
+
+    if (steps === undefined || steps === null) {
+      return res.status(400).json({
+        error: 'steps parameter is required',
+      });
+    }
+
+    // Validate that steps is either an array or an object
+    if (!Array.isArray(steps) && typeof steps !== 'object') {
+      return res.status(400).json({
+        error: 'steps must be either an array or an object',
+      });
+    }
+
+    const intents = getIntentsFromRuleSteps(steps);
+    return res.json({ intents });
+  } catch (error) {
+    console.error('Error extracting intents from rule steps:', error);
+    return res.status(500).json({
+      error: 'Internal server error while extracting intents',
     });
   }
 });

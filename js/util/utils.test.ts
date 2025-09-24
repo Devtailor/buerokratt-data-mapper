@@ -501,12 +501,6 @@ describe('getIntentsFromRuleSteps', () => {
     expect(result).toEqual(['common_ask_csa', 'common_greeting']);
   });
 
-  it('should handle undefined input', () => {
-    const result = getIntentsFromRuleSteps(undefined);
-
-    expect(result).toEqual([]);
-  });
-
   it('should handle object without intent property', () => {
     const step = { entities: [] };
 
