@@ -137,16 +137,29 @@ export const parseJwt = (token) => {
 export const compareModelIntentReports = (oldModelReport, newModelReport) => {
   // Keys to exclude from intent comparison (summary metrics)
   const excludeKeys = ['accuracy', 'macro avg', 'weighted avg', 'micro avg'];
-  
-  const oldModelIntents = Object.keys(oldModelReport).filter(key => !excludeKeys.includes(key));
-  const newModelIntents = Object.keys(newModelReport).filter(key => !excludeKeys.includes(key));
-  
-  const newModelUniqueIntents = newModelIntents.filter(intent => !oldModelIntents.includes(intent));
-  const oldModelUniqueIntents = oldModelIntents.filter(intent => !newModelIntents.includes(intent));
-  
+
+  const oldModelIntents = Object.keys(oldModelReport).filter((key) => !excludeKeys.includes(key));
+  const newModelIntents = Object.keys(newModelReport).filter((key) => !excludeKeys.includes(key));
+
+  const newModelUniqueIntents = newModelIntents.filter((intent) => !oldModelIntents.includes(intent));
+  const oldModelUniqueIntents = oldModelIntents.filter((intent) => !newModelIntents.includes(intent));
+
   return {
     newModelUniqueIntents,
-    oldModelUniqueIntents
+    oldModelUniqueIntents,
   };
 };
 
+export const getIntentsFromRuleSteps = (steps) => {
+  const intents = new Set();
+
+  if (Array.isArray(steps)) {
+    steps.forEach((step) => {
+      if (step.intent) intents.add(step.intent);
+    });
+  } else if (steps?.intent) {
+    intents.add(steps.intent);
+  }
+
+  return Array.from(intents);
+};

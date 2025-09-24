@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { compareModelIntentReports } from './utils.js';
+import { compareModelIntentReports, getIntentsFromRuleSteps } from './utils.js';
 
 describe('compareModelIntents', () => {
   it('should identify unique intents in new model', () => {
@@ -438,5 +438,91 @@ describe('compareModelIntents', () => {
 
     expect(result.newModelUniqueIntents).toEqual(['common_service_intent']);
     expect(result.oldModelUniqueIntents).toEqual(['Common_Service_Intent']);
+  });
+});
+
+describe('getIntentsFromRuleSteps', () => {
+  it('should extract intents from array of steps with duplicate intents', () => {
+    const steps = [
+      { intent: 'common_ask_csa', entities: [] },
+      { intent: 'common_ask_csa', entities: [] },
+    ];
+
+    const result = getIntentsFromRuleSteps(steps);
+
+    expect(result).toEqual(['common_ask_csa']);
+  });
+
+  it('should extract intents from array of steps with different intents', () => {
+    const steps = [
+      { intent: 'common_ask_csa', entities: [] },
+      { intent: 'common_greeting', entities: [] },
+      { intent: 'common_ask_csa', entities: [] },
+    ];
+
+    const result = getIntentsFromRuleSteps(steps);
+
+    expect(result).toEqual(['common_ask_csa', 'common_greeting']);
+  });
+
+  it('should extract intent from single step object', () => {
+    const step = { intent: 'common_ask_csa', entities: [] };
+
+    const result = getIntentsFromRuleSteps(step);
+
+    expect(result).toEqual(['common_ask_csa']);
+  });
+
+  it('should handle empty array', () => {
+    const steps: any[] = [];
+
+    const result = getIntentsFromRuleSteps(steps);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should handle array with steps without intent property', () => {
+    const steps = [{ entities: [] }, { entities: [] }];
+
+    const result = getIntentsFromRuleSteps(steps);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should handle array with mixed steps (some with intent, some without)', () => {
+    const steps = [
+      { intent: 'common_ask_csa', entities: [] },
+      { entities: [] },
+      { intent: 'common_greeting', entities: [] },
+    ];
+
+    const result = getIntentsFromRuleSteps(steps);
+
+    expect(result).toEqual(['common_ask_csa', 'common_greeting']);
+  });
+
+  it('should handle undefined input', () => {
+    const result = getIntentsFromRuleSteps(undefined);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should handle object without intent property', () => {
+    const step = { entities: [] };
+
+    const result = getIntentsFromRuleSteps(step);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should handle steps with undefined intent values', () => {
+    const steps = [
+      { intent: undefined, entities: [] },
+      { intent: 'common_ask_csa', entities: [] },
+    ];
+
+    const result = getIntentsFromRuleSteps(steps);
+
+    expect(result).toEqual(['common_ask_csa']);
   });
 });
