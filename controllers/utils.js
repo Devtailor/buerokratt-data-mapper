@@ -117,7 +117,7 @@ router.post('/get-intents-from-rule-steps', async (req, res) => {
     }
 
     const intents = getIntentsFromRuleSteps(steps);
-    return res.json({ intents });
+    return res.json(intents);
   } catch (error) {
     console.error('Error extracting intents from rule steps:', error);
     return res.status(500).json({
