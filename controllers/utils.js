@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import { body, matchedData, validationResult } from 'express-validator';
 
+import { compareArrays, extractIntentsFromModelReport, getIntentsFromRuleSteps } from '../js/util/utils.js';
+
 const router = express.Router();
 
 router.post(
@@ -65,6 +67,95 @@ router.post('/map-domains-data', async (req, res) => {
     }));
 
   return res.json(result);
+});
+
+router.post('/compare-model-intent-reports', async (req, res) => {
+  try {
+    const { oldModelReport, newModelReport } = req.body;
+
+    if (!oldModelReport || !newModelReport) {
+      return res.status(400).json({
+        error: 'Both oldModelReport and newModelReport are required',
+      });
+    }
+
+    if (
+      typeof oldModelReport !== 'object' ||
+      typeof newModelReport !== 'object' ||
+      Array.isArray(oldModelReport) ||
+      Array.isArray(newModelReport)
+    ) {
+      return res.status(400).json({
+        error: 'Both oldModelReport and newModelReport must be objects',
+      });
+    }
+
+    const oldIntents = extractIntentsFromModelReport(oldModelReport);
+    const newIntents = extractIntentsFromModelReport(newModelReport);
+
+    const result = compareArrays(oldIntents, newIntents);
+    return res.json({
+      newModelUniqueIntents: result.newUniqueItems,
+      oldModelUniqueIntents: result.oldUniqueItems,
+    });
+  } catch (error) {
+    console.error('Error comparing model intents:', error);
+    return res.status(500).json({
+      error: 'Internal server error while comparing model intents',
+    });
+  }
+});
+
+router.post('/compare-arrays', async (req, res) => {
+  try {
+    const { oldArray, newArray } = req.body;
+
+    if (!oldArray || !newArray) {
+      return res.status(400).json({
+        error: 'Both oldArray and newArray are required',
+      });
+    }
+
+    if (!Array.isArray(oldArray) || !Array.isArray(newArray)) {
+      return res.status(400).json({
+        error: 'Both oldArray and newArray must be arrays',
+      });
+    }
+
+    const result = compareArrays(oldArray, newArray);
+    return res.json(result);
+  } catch (error) {
+    console.error('Error comparing arrays:', error);
+    return res.status(500).json({
+      error: 'Internal server error while comparing arrays',
+    });
+  }
+});
+
+router.post('/get-intents-from-rule-steps', async (req, res) => {
+  try {
+    const { steps } = req.body;
+
+    if (steps === undefined || steps === null) {
+      return res.status(400).json({
+        error: 'steps parameter is required',
+      });
+    }
+
+    if (!Array.isArray(steps) && typeof steps !== 'object') {
+      return res.status(400).json({
+        error: 'steps must be either an array or an object',
+      });
+    }
+
+    const intents = getIntentsFromRuleSteps(steps);
+    return res.json(intents);
+  } catch (error) {
+    console.error('Error extracting intents from rule steps:', error);
+    return res.status(500).json({
+      error: 'Internal server error while extracting intents',
+    });
+  }
 });
 
 export default router;
