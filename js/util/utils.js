@@ -133,32 +133,3 @@ export const parseJwt = (token) => {
     return null;
   }
 };
-
-export const extractIntentsFromModelReport = (modelReport) => {
-  const excludeKeys = ['accuracy', 'macro avg', 'weighted avg', 'micro avg'];
-  return Object.keys(modelReport).filter((key) => !excludeKeys.includes(key));
-};
-
-export const compareArrays = (oldArray, newArray) => {
-  const newUniqueItems = newArray.filter((item) => !oldArray.includes(item));
-  const oldUniqueItems = oldArray.filter((item) => !newArray.includes(item));
-
-  return {
-    newUniqueItems,
-    oldUniqueItems,
-  };
-};
-
-export const getIntentsFromRuleSteps = (steps) => {
-  const intents = new Set();
-
-  if (Array.isArray(steps)) {
-    steps.forEach((step) => {
-      if (step.intent) intents.add(step.intent);
-    });
-  } else if (steps?.intent) {
-    intents.add(steps.intent);
-  }
-
-  return Array.from(intents);
-};
