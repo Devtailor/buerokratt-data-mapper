@@ -31,7 +31,7 @@ const wrapper = function (config) {
       Object.entries(objects).map(async ([key, value]) => {
         const result = await stringToBase64Encrypt(value);
         return [key, result.cipher];
-      }),
+      })
     );
 
     const converted = Object.fromEntries(entries);
