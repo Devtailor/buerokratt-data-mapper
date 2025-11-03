@@ -323,21 +323,23 @@ router.post(
 
 router.post('/chats-to-xlsx', async (req, res) => {
   try {
-    const { chatMessages, chatHeaders, chatRows, chatIds } = req.body;
+    const { chatMessages, chatHeaders, chatRows, chatIds, language = 'en' } = req.body;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
+    const dateLocale = language === 'en' ? 'en-GB' : 'et-EE';
+    const messagesHeaderLabel = language === 'en' ? 'Messages' : 'Sõnumid';
 
     chatIds.forEach((chatId, index) => {
-      worksheet.addRow([`Vestlus #${index + 1}`]);
+      worksheet.addRow([language === 'en' ? `Chat #${index + 1}` : `Vestlus #${index + 1}`]);
 
       worksheet.addRow(chatHeaders);
 
       worksheet.addRow(chatRows[index]);
 
-      worksheet.addRow(['Sõnumid']);
+      worksheet.addRow([messagesHeaderLabel]);
 
-      const headerRow = ['', 'Created', 'Bot', 'Client', 'CSA'];
+      const headerRow = ['', language === 'en' ? 'Created' : 'Loodud', 'Bot', 'Client', 'CSA'];
       worksheet.addRow(headerRow);
 
       const relatedMessages = chatMessages
@@ -347,7 +349,20 @@ router.post('/chats-to-xlsx', async (req, res) => {
         );
 
       relatedMessages.forEach((msg) => {
-        const row = ['', msg.created, '', '', ''];
+        const formattedDateTime = new Date(msg.created)
+          .toLocaleString(dateLocale, {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: 'Europe/Tallinn',
+          })
+          .replaceAll('/', '.')
+          .replaceAll(',', '');
+        const row = ['', formattedDateTime, '', '', ''];
         if (msg.authorRole === 'buerokratt') {
           row[2] = msg.content;
         } else if (msg.authorRole === 'end-user') {
