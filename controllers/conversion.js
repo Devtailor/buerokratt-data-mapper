@@ -323,7 +323,7 @@ router.post(
 
 router.post('/chats-to-xlsx', async (req, res) => {
   try {
-    const { chatMessages, chatHeaders, chatRows, chatIds, language = 'en' } = req.body;
+    const { chatMessages, chatHeaders, chatRows, chatIds, language = 'et' } = req.body;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
