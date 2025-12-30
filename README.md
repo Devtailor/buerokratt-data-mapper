@@ -14,10 +14,10 @@ docker-compose up -d
 
 Handlebars files go to `views` directory.
 
-Example on how to access handlebars in browser:
+Example on how to access handlebars:
 
-```
-http://localhost:3000/hbs/my/restful/url/myFile
+```bash
+curl --location --request POST 'http://localhost:3000/hbs/my/restful/url/myFile' --data ''
 ```
 
 ## Javascript
@@ -27,7 +27,7 @@ Javascript files go to `js` directory.
 Example on how to access javascript files in browser:
 
 ```
-http://localhost:3000/js/my/restful/url/myScript
+http://localhost:3000/js/example/examples
 ```
 
 _Note!_ URL must not end with `.js` extension.
@@ -47,7 +47,13 @@ nvm use
 # Install node dependencies
 npm install
 
-# Run the API
+# Development mode (hot reload)
+npm run dev
+
+# Production build
+npm run build
+
+# Run the compiled app
 npm start
 ```
 
