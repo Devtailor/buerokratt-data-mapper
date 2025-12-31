@@ -1,20 +1,20 @@
-import fs from "fs";
+import fs from 'fs';
 
-import { FileActionResponse } from "../../interfaces";
-import { buildContentFilePath } from "../util";
+import { FileActionResponse } from '../../interfaces';
+import { buildContentFilePath } from '../util';
 
 export function checkIfFileExists(file_path: string): FileActionResponse {
   if (!file_path) {
     return {
       error: true,
-      message: "Filename is required",
+      message: 'Filename is required',
     };
   }
 
-  if (file_path.includes("..")) {
+  if (file_path.includes('..')) {
     return {
       error: true,
-      message: "Relative paths are not allowed",
+      message: 'Relative paths are not allowed',
     };
   }
 
@@ -23,13 +23,13 @@ export function checkIfFileExists(file_path: string): FileActionResponse {
     fs.accessSync(current_path, fs.constants.F_OK);
     return {
       error: false,
-      message: "File Exists",
+      message: 'File Exists',
     };
   } catch {
-    console.error("File does not exist:", file_path);
+    console.error('File does not exist:', file_path);
     return {
       error: true,
-      message: "File Does Not Exist",
+      message: 'File Does Not Exist',
     };
   }
 }

@@ -1,13 +1,13 @@
-import express, { Request, Response } from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import express, { Request, Response } from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
 const router = express.Router();
 
 router.post(
-  "/array-elements-length",
+  '/array-elements-length',
   [
-    body("array").isArray().withMessage("array is required and must be an array"),
-    body("length").isNumeric().withMessage("length is required and must be a number"),
+    body('array').isArray().withMessage('array is required and must be an array'),
+    body('length').isNumeric().withMessage('length is required and must be a number'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -24,15 +24,15 @@ router.post(
   },
 );
 
-router.post("/validate-stories-rules", (req: Request, res: Response) => {
+router.post('/validate-stories-rules', (req: Request, res: Response) => {
   const body = req.body as {
     rule?: { steps: Step[] };
     story?: { steps: Step[] };
   };
-  const steps = (req as any).category === "rules" ? body.rule?.steps : body.story?.steps;
+  const steps = (req as any).category === 'rules' ? body.rule?.steps : body.story?.steps;
 
   if (!steps) {
-    return res.status(400).json({ error: "Invalid request body" });
+    return res.status(400).json({ error: 'Invalid request body' });
   }
 
   const isValid = validateStepsForNoConsecutiveDuplicates(steps);

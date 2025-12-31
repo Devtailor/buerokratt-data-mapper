@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from 'express';
 
 /**
  * @param res Original Response Object
@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from "express";
  * the res and then calls the original res.send after restoring it
  */
 const resDotSendInterceptor =
-  (res: Response & { contentBody?: any }, send: Response["send"]) =>
+  (res: Response & { contentBody?: any }, send: Response['send']) =>
   (content: any): Response => {
     res.contentBody = content;
     res.send = send;
@@ -23,7 +23,7 @@ export const requestLoggerMiddleware =
       )}, body: ${JSON.stringify(req.body)}}`,
     );
     res.send = resDotSendInterceptor(res, res.send.bind(res));
-    res.on("finish", () => {
+    res.on('finish', () => {
       logger(`Response: {statusCode: ${res.statusCode}, responseData: ${JSON.stringify(res.contentBody)}}`);
     });
     next();

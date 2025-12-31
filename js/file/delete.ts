@@ -1,13 +1,13 @@
-import fs from "fs";
+import fs from 'fs';
 
-import { FileActionResponse } from "../../interfaces";
-import { isValidFilePath } from "../util";
+import { FileActionResponse } from '../../interfaces';
+import { isValidFilePath } from '../util';
 
 export function deleteFile(file_path: string): FileActionResponse {
   if (!isValidFilePath(file_path)) {
     return {
       error: true,
-      message: "File path contains illegal characters",
+      message: 'File path contains illegal characters',
     };
   }
 
@@ -16,13 +16,13 @@ export function deleteFile(file_path: string): FileActionResponse {
 
     return {
       error: false,
-      message: "File deleted successfully",
+      message: 'File deleted successfully',
     };
   } catch (error) {
-    console.error("Error deleting file:", error);
+    console.error('Error deleting file:', error);
     return {
       error: true,
-      message: "Unable to delete file",
+      message: 'Unable to delete file',
     };
   }
 }

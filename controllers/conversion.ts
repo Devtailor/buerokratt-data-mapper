@@ -1,13 +1,13 @@
-import ExcelJS from "exceljs";
-import express, { Request, RequestHandler, Response } from "express";
-import { body, matchedData, validationResult } from "express-validator";
-import multer from "multer";
-import Papa from "papaparse";
-import { parse, stringify } from "yaml";
+import ExcelJS from 'exceljs';
+import express, { Request, RequestHandler, Response } from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
+import multer from 'multer';
+import Papa from 'papaparse';
+import { parse, stringify } from 'yaml';
 
-import { ChatMessage, ChatsToXlsxBody, Rule, RuleStoryStep, Story } from "../interfaces";
-import { convertJsonToYamlDomain } from "../js/convert";
-import { base64ToText } from "../js/util";
+import { ChatMessage, ChatsToXlsxBody, Rule, RuleStoryStep, Story } from '../interfaces';
+import { convertJsonToYamlDomain } from '../js/convert';
+import { base64ToText } from '../js/util';
 
 const router = express.Router();
 
@@ -15,8 +15,8 @@ const router = express.Router();
 const FILE_SIZE_LIMIT = 5 * 1024 * 1024;
 
 router.post(
-  "/csv_to_json",
-  multer({ limits: { fileSize: FILE_SIZE_LIMIT } }).array("file") as RequestHandler,
+  '/csv_to_json',
+  multer({ limits: { fileSize: FILE_SIZE_LIMIT } }).array('file') as RequestHandler,
   (req: Request<{}, {}, { file: string }>, res: Response) => {
     const file = base64ToText(req.body.file);
     const result = Papa.parse(file, { skipEmptyLines: true });
@@ -25,8 +25,8 @@ router.post(
 );
 
 router.post(
-  "/yaml_to_json",
-  multer({ limits: { fileSize: FILE_SIZE_LIMIT } }).array("file") as RequestHandler,
+  '/yaml_to_json',
+  multer({ limits: { fileSize: FILE_SIZE_LIMIT } }).array('file') as RequestHandler,
   (req: Request<{}, {}, { file: string }>, res: Response) => {
     const file = base64ToText(req.body.file);
     const result = parse(file);
@@ -34,39 +34,39 @@ router.post(
   },
 );
 
-router.post("/json_to_yaml", (req: Request, res: Response) => {
+router.post('/json_to_yaml', (req: Request, res: Response) => {
   const result = stringify(req.body, { lineWidth: 0 });
   res.send({ json: result });
 });
 
-router.post("/json_to_yaml_domain", (req: Request, res: Response) => {
+router.post('/json_to_yaml_domain', (req: Request, res: Response) => {
   try {
     const convertedYaml = convertJsonToYamlDomain(req.body);
     res.send({ json: convertedYaml });
   } catch (error: any) {
-    res.status(500).json({ error: "Failed to create file", details: error.message });
+    res.status(500).json({ error: 'Failed to create file', details: error.message });
   }
 });
 
-router.post("/json_to_yaml_data", (req: Request, res: Response) => {
+router.post('/json_to_yaml_data', (req: Request, res: Response) => {
   try {
     let result = stringify(req.body.data, { lineWidth: -1 });
-    result = result.replace(/(\n[^\s].+?:)/g, "\n$1");
+    result = result.replace(/(\n[^\s].+?:)/g, '\n$1');
     result = result.trimStart();
     res.send({ yaml: result });
   } catch (error) {
-    console.error("Error formatting yaml lines", error);
+    console.error('Error formatting yaml lines', error);
     const result = stringify(req.body.data);
     res.send({ yaml: result });
   }
 });
 
 router.post(
-  "/string-replace",
+  '/string-replace',
   [
-    body("data").isString().withMessage("data must be a string"),
-    body("search").isString().withMessage("search must be a string"),
-    body("replace").isString().withMessage("replace must be a string"),
+    body('data').isString().withMessage('data must be a string'),
+    body('search').isString().withMessage('search must be a string'),
+    body('replace').isString().withMessage('replace must be a string'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -75,8 +75,8 @@ router.post(
     }
 
     let { data, search, replace } = matchedData(req) as { data: string; search: string; replace: string };
-    if (search === "|") {
-      res.json(data.replace(/(examples:.*?)\|/g, "$1"));
+    if (search === '|') {
+      res.json(data.replace(/(examples:.*?)\|/g, '$1'));
     } else {
       res.json(data.replaceAll(search, replace));
     }
@@ -84,10 +84,10 @@ router.post(
 );
 
 router.post(
-  "/string-split",
+  '/string-split',
   [
-    body("data").isString().withMessage("data must be a string"),
-    body("separator").isString().withMessage("separator must be a string"),
+    body('data').isString().withMessage('data must be a string'),
+    body('separator').isString().withMessage('separator must be a string'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -105,8 +105,8 @@ router.post(
 );
 
 router.post(
-  "/string-to-array",
-  [body("data").isString().withMessage("data must be a string")],
+  '/string-to-array',
+  [body('data').isString().withMessage('data must be a string')],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -115,19 +115,19 @@ router.post(
 
     let { data } = matchedData(req) as { data: string };
     if (data.length > 0) {
-      const removedQuot = data.replaceAll("&quot;", "");
-      const removedHyphens = removedQuot.replace(/^- /gm, "");
-      const newArray = removedHyphens.split("\n");
-      res.json(newArray.filter((el) => "" !== el.trim()));
+      const removedQuot = data.replaceAll('&quot;', '');
+      const removedHyphens = removedQuot.replace(/^- /gm, '');
+      const newArray = removedHyphens.split('\n');
+      res.json(newArray.filter((el) => '' !== el.trim()));
     } else {
       res.json([]);
     }
   },
 );
 
-router.post("/csv-to-json", (req: Request<{}, {}, { file: Record<string, string> }>, res: Response) => {
+router.post('/csv-to-json', (req: Request<{}, {}, { file: Record<string, string> }>, res: Response) => {
   if (!req.body.file) {
-    return res.status(400).json({ error: "No file uploaded" }).send();
+    return res.status(400).json({ error: 'No file uploaded' }).send();
   }
   const fileContent = Object.values(req.body.file)[0];
   const result = Papa.parse(fileContent, { skipEmptyLines: true });
@@ -136,10 +136,10 @@ router.post("/csv-to-json", (req: Request<{}, {}, { file: Record<string, string>
 });
 
 router.post(
-  "/json-to-yaml-stories",
+  '/json-to-yaml-stories',
   [
-    body("stories").isArray().optional().withMessage("stories must be an array"),
-    body("rules").isArray().optional().withMessage("rules must be an array"),
+    body('stories').isArray().optional().withMessage('stories must be an array'),
+    body('rules').isArray().optional().withMessage('rules must be an array'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -152,7 +152,7 @@ router.post(
 
     if (stories) {
       result = {
-        version: "3.0",
+        version: '3.0',
         stories: stories
           .map((entry: Story) => {
             const stepsArray = Array.isArray(entry.steps) ? entry.steps : [entry.steps];
@@ -167,7 +167,7 @@ router.post(
                       formattedStep.intent = step.intent;
                       if (step.entities && step.entities.length > 0) {
                         formattedStep.entities = step.entities.map((entity: any) => ({
-                          [entity]: "",
+                          [entity]: '',
                         }));
                       }
                       break;
@@ -192,7 +192,7 @@ router.post(
       };
     } else if (rules) {
       result = {
-        version: "3.0",
+        version: '3.0',
         rules: rules
           .map((entry: Rule) => {
             const stepsArray = Array.isArray(entry.steps) ? entry.steps : [entry.steps];
@@ -213,7 +213,7 @@ router.post(
                       formattedStep.intent = step.intent;
                       if (step.entities && step.entities.length > 0) {
                         formattedStep.entities = step.entities.map((entity: any) => ({
-                          [entity]: "",
+                          [entity]: '',
                         }));
                       }
                       break;
@@ -237,16 +237,16 @@ router.post(
           .filter((entry: any) => entry.steps.length > 0),
       };
     } else {
-      return res.status(400).json({ error: "Invalid request body" });
+      return res.status(400).json({ error: 'Invalid request body' });
     }
 
     const yamlString = stringify(result, {
       customTags: [
         {
-          tag: "tag:yaml.org,2002:seq",
-          format: "flow",
+          tag: 'tag:yaml.org,2002:seq',
+          format: 'flow',
           identify: (value: unknown): boolean => Array.isArray(value) && value.length === 0,
-          resolve: (): any => "",
+          resolve: (): any => '',
         },
       ],
     });
@@ -256,8 +256,8 @@ router.post(
 );
 
 router.post(
-  "/chart-data-to-xlsx",
-  [body("data").isArray().withMessage("data must be an array of flat objects")],
+  '/chart-data-to-xlsx',
+  [body('data').isArray().withMessage('data must be an array of flat objects')],
   async (req: Request<{}, {}, { data: Record<string, any>[] }>, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -265,7 +265,7 @@ router.post(
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Sheet1");
+    const worksheet = workbook.addWorksheet('Sheet1');
 
     const headers = Object.keys(req.body.data[0] ?? []);
     const headerRow = worksheet.addRow(headers);
@@ -282,22 +282,22 @@ router.post(
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
-    res.json({ base64String: Buffer.from(buffer).toString("base64") });
+    res.json({ base64String: Buffer.from(buffer).toString('base64') });
   },
 );
 
 router.post(
-  "/array-to-xlsx",
+  '/array-to-xlsx',
   [
-    body("data")
+    body('data')
       .isArray()
       .custom((array: any[]) => {
         return array.every((item) => {
           if (!Array.isArray(item)) return false;
-          return item.every((value) => typeof value === "string");
+          return item.every((value) => typeof value === 'string');
         });
       })
-      .withMessage("data must be an array of string arrays"),
+      .withMessage('data must be an array of string arrays'),
   ],
   async (req: Request<{}, {}, { data: string[][] }>, res: Response) => {
     const errors = validationResult(req);
@@ -306,13 +306,13 @@ router.post(
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Sheet1");
+    const worksheet = workbook.addWorksheet('Sheet1');
 
     req.body.data.forEach((row) => {
       // eslint-disable-next-line sonarjs/function-return-type
       const processedRow = row.map<string | number>((cell) => {
         const numeric = Number(cell);
-        return cell !== "" && !Number.isNaN(numeric) ? numeric : cell;
+        return cell !== '' && !Number.isNaN(numeric) ? numeric : cell;
       });
       worksheet.addRow(processedRow);
     });
@@ -320,7 +320,7 @@ router.post(
     // Calculate and set column widths based on content
     if (worksheet.columns) {
       worksheet.columns.forEach((column, index) => {
-        if (!column || typeof column.eachCell !== "function") return;
+        if (!column || typeof column.eachCell !== 'function') return;
 
         let maxLength = 0;
         column.eachCell({ includeEmpty: true }, (cell) => {
@@ -332,22 +332,22 @@ router.post(
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
-    res.json({ base64String: Buffer.from(buffer).toString("base64") });
+    res.json({ base64String: Buffer.from(buffer).toString('base64') });
   },
 );
 
 router.post(
-  "/examples-array-to-xlsx",
+  '/examples-array-to-xlsx',
   [
-    body("data")
+    body('data')
       .isArray()
       .custom((array: any[]) => {
         return array.every((item) => {
           if (!Array.isArray(item)) return false;
-          return item.every((value) => typeof value === "string");
+          return item.every((value) => typeof value === 'string');
         });
       })
-      .withMessage("data must be an array of string arrays"),
+      .withMessage('data must be an array of string arrays'),
   ],
   async (req: Request<{}, {}, { data: string[][] }>, res: Response) => {
     const errors = validationResult(req);
@@ -356,11 +356,11 @@ router.post(
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Sheet1");
+    const worksheet = workbook.addWorksheet('Sheet1');
 
     req.body.data.flat().forEach((value) => {
       const numeric = Number(value);
-      const processedValue = value !== "" && !Number.isNaN(numeric) ? numeric : value;
+      const processedValue = value !== '' && !Number.isNaN(numeric) ? numeric : value;
       worksheet.addRow([processedValue]);
     });
 
@@ -374,25 +374,25 @@ router.post(
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
-    res.json({ base64String: Buffer.from(buffer).toString("base64") });
+    res.json({ base64String: Buffer.from(buffer).toString('base64') });
   },
 );
 
-router.post("/chats-to-xlsx", async (req: Request<{}, {}, ChatsToXlsxBody>, res: Response) => {
+router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res: Response) => {
   try {
-    const { chatMessages, chatHeaders, chatRows, chatIds, language = "et" } = req.body;
+    const { chatMessages, chatHeaders, chatRows, chatIds, language = 'et' } = req.body;
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Chats");
-    const dateLocale = language === "en" ? "en-GB" : "et-EE";
-    const messagesHeaderLabel = language === "en" ? "Messages" : "Sõnumid";
+    const worksheet = workbook.addWorksheet('Chats');
+    const dateLocale = language === 'en' ? 'en-GB' : 'et-EE';
+    const messagesHeaderLabel = language === 'en' ? 'Messages' : 'Sõnumid';
 
     chatIds.forEach((chatId: string, index: number) => {
-      worksheet.addRow([language === "en" ? `Chat #${index + 1}` : `Vestlus #${index + 1}`]);
+      worksheet.addRow([language === 'en' ? `Chat #${index + 1}` : `Vestlus #${index + 1}`]);
       worksheet.addRow(chatHeaders);
       worksheet.addRow(chatRows[index]);
       worksheet.addRow([messagesHeaderLabel]);
-      const headerRow = ["", language === "en" ? "Created" : "Loodud", "Bot", "Client", "CSA"];
+      const headerRow = ['', language === 'en' ? 'Created' : 'Loodud', 'Bot', 'Client', 'CSA'];
       worksheet.addRow(headerRow);
       const relatedMessages = chatMessages
         .filter((msg: ChatMessage) => msg.chatId === chatId)
@@ -400,21 +400,21 @@ router.post("/chats-to-xlsx", async (req: Request<{}, {}, ChatsToXlsxBody>, res:
       relatedMessages.forEach((msg: ChatMessage) => {
         const formattedDateTime = new Date(msg.created)
           .toLocaleString(dateLocale, {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
             hour12: false,
-            timeZone: "Europe/Tallinn",
+            timeZone: 'Europe/Tallinn',
           })
-          .replaceAll("/", ".")
-          .replaceAll(",", "");
-        const row = ["", formattedDateTime, "", "", ""];
-        if (msg.authorRole === "buerokratt") {
+          .replaceAll('/', '.')
+          .replaceAll(',', '');
+        const row = ['', formattedDateTime, '', '', ''];
+        if (msg.authorRole === 'buerokratt') {
           row[2] = msg.content;
-        } else if (msg.authorRole === "end-user") {
+        } else if (msg.authorRole === 'end-user') {
           row[3] = msg.content;
         } else {
           row[4] = msg.content;
@@ -425,7 +425,7 @@ router.post("/chats-to-xlsx", async (req: Request<{}, {}, ChatsToXlsxBody>, res:
     });
 
     worksheet.columns.forEach((col) => {
-      if (!col || typeof col.eachCell !== "function") return;
+      if (!col || typeof col.eachCell !== 'function') return;
 
       let maxLength = 10;
       col.eachCell({ includeEmpty: true }, (cell) => {
@@ -436,21 +436,21 @@ router.post("/chats-to-xlsx", async (req: Request<{}, {}, ChatsToXlsxBody>, res:
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
-    res.json({ base64String: Buffer.from(buffer).toString("base64") });
+    res.json({ base64String: Buffer.from(buffer).toString('base64') });
   } catch (err: any) {
-    console.error("Excel export error:", err);
-    res.status(500).json({ error: "Failed to export Excel" });
+    console.error('Excel export error:', err);
+    res.status(500).json({ error: 'Failed to export Excel' });
   }
 });
 
-router.post("/xlsx-to-array", async (req: Request<{}, {}, { file: Record<string, string> }>, res: Response) => {
+router.post('/xlsx-to-array', async (req: Request<{}, {}, { file: Record<string, string> }>, res: Response) => {
   try {
     if (!req.body.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const base64Data = Object.values(req.body.file)[0];
-    const buffer = Uint8Array.from(Buffer.from(base64Data, "base64")).buffer;
+    const buffer = Uint8Array.from(Buffer.from(base64Data, 'base64')).buffer;
 
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer);
@@ -468,10 +468,10 @@ router.post("/xlsx-to-array", async (req: Request<{}, {}, { file: Record<string,
       });
       res.json(jsonData);
     } else {
-      res.status(400).json({ error: "Worksheet not found in Excel file" });
+      res.status(400).json({ error: 'Worksheet not found in Excel file' });
     }
   } catch (error: any) {
-    res.status(500).json({ error: "Failed to process Excel file", details: error.message });
+    res.status(500).json({ error: 'Failed to process Excel file', details: error.message });
   }
 });
 

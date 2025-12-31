@@ -1,20 +1,20 @@
-import fs from "fs";
+import fs from 'fs';
 
-import { FileActionResponse } from "../../interfaces";
-import { isValidFilePath } from "../util";
+import { FileActionResponse } from '../../interfaces';
+import { isValidFilePath } from '../util';
 
 export function createFile(file_path: string, content: string): FileActionResponse {
   if (!isValidFilePath(file_path)) {
     return {
       error: true,
-      message: "File path contains illegal characters",
+      message: 'File path contains illegal characters',
     };
   }
 
   if (!file_path || !content) {
     return {
       error: true,
-      message: "File path and content are required",
+      message: 'File path and content are required',
     };
   }
 
@@ -23,13 +23,13 @@ export function createFile(file_path: string, content: string): FileActionRespon
 
     return {
       error: false,
-      message: "File created successfully",
+      message: 'File created successfully',
     };
   } catch (error) {
-    console.error("Error creating file:", error);
+    console.error('Error creating file:', error);
     return {
       error: true,
-      message: "Unable to create file",
+      message: 'Unable to create file',
     };
   }
 }

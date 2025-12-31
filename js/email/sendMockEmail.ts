@@ -1,5 +1,5 @@
-import nodemailer from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import nodemailer from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 // NOTE: This service is only for testing purposes. Needs to be replaced with actual mail service.
 
@@ -7,7 +7,7 @@ export const sendMockEmail = async (to: string, subject: string, text: string): 
   console.log(to, subject, text);
   let testAccount = await nodemailer.createTestAccount();
   const transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
+    host: 'smtp.ethereal.email',
     port: 587,
     secure: true,
     auth: {
@@ -25,7 +25,7 @@ export const sendMockEmail = async (to: string, subject: string, text: string): 
 
   try {
     const info: SMTPTransport.SentMessageInfo = await transporter.sendMail(mailOptions);
-    console.log("Preview URL: " + nodemailer.getTestMessageUrl(info));
+    console.log('Preview URL: ' + nodemailer.getTestMessageUrl(info));
   } catch (err) {
     console.error(err);
   }

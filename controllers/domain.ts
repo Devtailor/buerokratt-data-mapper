@@ -1,8 +1,8 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response } from 'express';
 
 const router = express.Router();
 
-router.post("/update-existing-response", (req: Request, res: Response) => {
+router.post('/update-existing-response', (req: Request, res: Response) => {
   const {
     json,
     searchKey,
@@ -20,7 +20,7 @@ router.post("/update-existing-response", (req: Request, res: Response) => {
   };
   if (!json || !searchKey || !newKey || !newKeyValue) {
     return res.status(400).json({
-      message: "json, searchKey, newKey, newKeyValue are required fields",
+      message: 'json, searchKey, newKey, newKeyValue are required fields',
     });
   }
 

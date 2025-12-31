@@ -1,2 +1,2 @@
-export * from "./get-all";
-export * from "./get-with-priority";
+export * from './get-all';
+export * from './get-with-priority';

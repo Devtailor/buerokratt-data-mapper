@@ -1,11 +1,11 @@
-import { DecryptBodyBase, DecryptResponse } from "../../interfaces";
+import { DecryptBodyBase, DecryptResponse } from '../../interfaces';
 
 export function base64Decrypt(body: DecryptBodyBase): DecryptResponse {
   const { cipher, isObject } = body;
   if (!cipher) {
     return {
       error: true,
-      message: "Cipher is missing",
+      message: 'Cipher is missing',
     };
   }
 
@@ -16,10 +16,10 @@ export function base64Decrypt(body: DecryptBodyBase): DecryptResponse {
       content: !isObject ? decoded : JSON.parse(decoded),
     };
   } catch (error) {
-    console.error("Base64 Decryption Error:", error);
+    console.error('Base64 Decryption Error:', error);
     return {
       error: true,
-      message: "Base64 Decryption Failed",
+      message: 'Base64 Decryption Failed',
     };
   }
 }

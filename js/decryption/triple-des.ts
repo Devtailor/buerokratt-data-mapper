@@ -1,13 +1,13 @@
-import crypto from "crypto-js";
+import crypto from 'crypto-js';
 
-import { DecryptBodyWithKey, DecryptResponse } from "../../interfaces";
+import { DecryptBodyWithKey, DecryptResponse } from '../../interfaces';
 
 export function tripleDesDecrypt(body: DecryptBodyWithKey): DecryptResponse {
   const { cipher, key, isObject } = body;
   if (!cipher || !key) {
     return {
       error: true,
-      message: !cipher ? "Cipher is missing" : "Key is missing",
+      message: !cipher ? 'Cipher is missing' : 'Key is missing',
     };
   }
 
@@ -19,7 +19,7 @@ export function tripleDesDecrypt(body: DecryptBodyWithKey): DecryptResponse {
     if (!utf8) {
       return {
         error: true,
-        message: "Invalid cipher or key",
+        message: 'Invalid cipher or key',
       };
     }
 
@@ -28,10 +28,10 @@ export function tripleDesDecrypt(body: DecryptBodyWithKey): DecryptResponse {
       content: !isObject ? utf8 : JSON.parse(utf8),
     };
   } catch (error) {
-    console.error("Triple DES Decryption Error:", error);
+    console.error('Triple DES Decryption Error:', error);
     return {
       error: true,
-      message: "Triple DES Decryption Failed",
+      message: 'Triple DES Decryption Failed',
     };
   }
 }

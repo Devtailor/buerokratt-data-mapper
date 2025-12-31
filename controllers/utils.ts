@@ -1,8 +1,8 @@
-import { createHash } from "crypto";
+import { createHash } from 'crypto';
 
-import bodyParser from "body-parser";
-import express, { Request, Response } from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import bodyParser from 'body-parser';
+import express, { Request, Response } from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -18,8 +18,8 @@ type MapDomainsDataRequest = {
 };
 
 router.post(
-  "/increase-double-digit-version",
-  [body("version").isString().withMessage("version must be a string")],
+  '/increase-double-digit-version',
+  [body('version').isString().withMessage('version must be a string')],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -27,7 +27,7 @@ router.post(
     }
 
     const { version } = matchedData(req) as VersionRequest;
-    const splitVersion = version.split("_");
+    const splitVersion = version.split('_');
     const majorV = splitVersion[0];
     let minorV = parseInt(splitVersion[1]);
     minorV += 1;
@@ -35,27 +35,27 @@ router.post(
   },
 );
 
-router.post("/object-list-contains-id", (req: Request, res: Response) => {
+router.post('/object-list-contains-id', (req: Request, res: Response) => {
   const { id, list } = req.body as ObjectListContainsIdRequest;
   const exists = checkIdExists(list, id);
   res.json(exists);
 });
 
-router.post("/today-minus-days", (req: Request, res: Response) => {
+router.post('/today-minus-days', (req: Request, res: Response) => {
   const { days } = req.body as TodayMinusDaysRequest;
   const result = new Date();
   result.setDate(result.getDate() - days);
   return res.json({ data: result });
 });
 
-router.post("/calculate-sha256-checksum", bodyParser.text({ type: "text/plain" }), (req: Request, res: Response) => {
-  const bodyText = typeof req.body === "string" ? req.body : "";
+router.post('/calculate-sha256-checksum', bodyParser.text({ type: 'text/plain' }), (req: Request, res: Response) => {
+  const bodyText = typeof req.body === 'string' ? req.body : '';
   if (!bodyText || bodyText.length === 0) {
-    return res.status(400).json("error: request body is empty");
+    return res.status(400).json('error: request body is empty');
   }
-  const hash = createHash("sha256");
+  const hash = createHash('sha256');
   hash.update(bodyText);
-  res.send(hash.digest("hex"));
+  res.send(hash.digest('hex'));
 });
 
 function checkIdExists(array: { id: string }[], id: string): boolean {
@@ -65,7 +65,7 @@ function checkIdExists(array: { id: string }[], id: string): boolean {
   return false;
 }
 
-router.post("/map-domains-data", (req: Request, res: Response) => {
+router.post('/map-domains-data', (req: Request, res: Response) => {
   const { domains, userDomains } = req.body as MapDomainsDataRequest;
 
   const result = domains

@@ -1,13 +1,13 @@
-import { replaceInFile } from "replace-in-file";
+import { replaceInFile } from 'replace-in-file';
 
-import { FileActionResponse } from "../../interfaces";
-import { buildContentFilePath, isValidFilePath } from "../util";
+import { FileActionResponse } from '../../interfaces';
+import { buildContentFilePath, isValidFilePath } from '../util';
 
 export async function editFile(file_path: string, from: string | RegExp, to: string): Promise<FileActionResponse> {
   if (!isValidFilePath(file_path)) {
     return {
       error: true,
-      message: "File path contains illegal characters",
+      message: 'File path contains illegal characters',
     };
   }
 
@@ -29,12 +29,12 @@ export async function editFile(file_path: string, from: string | RegExp, to: str
 
     return {
       error: false,
-      message: "File edited successfully",
+      message: 'File edited successfully',
     };
   } catch {
     return {
       error: true,
-      message: "Unable to edit file",
+      message: 'Unable to edit file',
     };
   }
 }

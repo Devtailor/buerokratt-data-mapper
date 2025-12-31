@@ -11,8 +11,8 @@ export function generateButtonsList(
   payload_keys: string[] = [],
 ): Button[] {
   if (!Array.isArray(list)) return [];
-  if (typeof service_name !== "string" || service_name.trim() === "") return [];
-  if (typeof key !== "string" || key.trim() === "") return [];
+  if (typeof service_name !== 'string' || service_name.trim() === '') return [];
+  if (typeof key !== 'string' || key.trim() === '') return [];
   if (!Array.isArray(payload_keys)) return [];
 
   const allKeys = [key, ...payload_keys];
@@ -31,7 +31,7 @@ export function generateButtonsList(
 
     if (payload_keys.length > 0) {
       const payloadValues = payload_keys.map((k) => obj[k]);
-      payload += `, (${payloadValues.join(", ")})`;
+      payload += `, (${payloadValues.join(', ')})`;
     }
 
     return {

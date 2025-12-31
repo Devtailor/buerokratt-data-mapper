@@ -1,13 +1,13 @@
-import fs from "fs";
+import fs from 'fs';
 
-import { FileActionResponse } from "../../interfaces";
-import { isValidFilePath } from "../util";
+import { FileActionResponse } from '../../interfaces';
+import { isValidFilePath } from '../util';
 
 export function moveFile(current_path: string, new_path: string): FileActionResponse {
   if (!isValidFilePath(current_path) || !isValidFilePath(new_path)) {
     return {
       error: true,
-      message: "path contains illegal characters",
+      message: 'path contains illegal characters',
     };
   }
 
@@ -20,13 +20,13 @@ export function moveFile(current_path: string, new_path: string): FileActionResp
 
     return {
       error: false,
-      message: "File moved successfully",
+      message: 'File moved successfully',
     };
   } catch (error) {
-    console.log("Error moving file:", error);
+    console.log('Error moving file:', error);
     return {
       error: true,
-      message: "Unable to move file",
+      message: 'Unable to move file',
     };
   }
 }

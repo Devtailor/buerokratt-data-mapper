@@ -1,2 +1,2 @@
-export * from "./buttonsList";
-export * from "./convertHtmlToPdf";
+export * from './buttonsList';
+export * from './convertHtmlToPdf';

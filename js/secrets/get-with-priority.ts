@@ -1,8 +1,8 @@
-import { getAllFiles, mapSecretToJson } from "../util";
+import { getAllFiles, mapSecretToJson } from '../util';
 
 export function getSecretsWithPriority(priority: string): Record<string, any> {
-  const prodSecrets = mapSecretToJson(getAllFiles("/secrets/prod"));
-  const testSecrets = mapSecretToJson(getAllFiles("/secrets/test"));
+  const prodSecrets = mapSecretToJson(getAllFiles('/secrets/prod'));
+  const testSecrets = mapSecretToJson(getAllFiles('/secrets/test'));
 
   const mergeSecrets = (
     secrets: Record<string, unknown>,
@@ -14,7 +14,7 @@ export function getSecretsWithPriority(priority: string): Record<string, any> {
       const value = secrets[k];
       const current = result[k];
 
-      if (value !== null && typeof value === "object") {
+      if (value !== null && typeof value === 'object') {
         if (current === undefined) result[k] = {};
 
         return mergeSecrets(
@@ -33,7 +33,7 @@ export function getSecretsWithPriority(priority: string): Record<string, any> {
   };
 
   const result: Record<string, unknown> = {};
-  mergeSecrets(prodSecrets, result, true, priority !== "test");
-  mergeSecrets(testSecrets, result, false, priority !== "test");
+  mergeSecrets(prodSecrets, result, true, priority !== 'test');
+  mergeSecrets(testSecrets, result, false, priority !== 'test');
   return result;
 }

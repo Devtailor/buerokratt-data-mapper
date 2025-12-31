@@ -1,6 +1,6 @@
-import unionBy from "lodash/unionBy";
+import unionBy from 'lodash/unionBy';
 
-import { MergeRequest } from "../../interfaces";
+import { MergeRequest } from '../../interfaces';
 
 interface MergeArraysResult<T> {
   error: boolean;
@@ -14,7 +14,7 @@ export function merge<T = any>(body: MergeRequest<T>): MergeArraysResult<T> {
   if (!array1 || !array2) {
     return {
       error: true,
-      message: "Both arrays are required",
+      message: 'Both arrays are required',
       array: [],
     };
   }
@@ -23,7 +23,7 @@ export function merge<T = any>(body: MergeRequest<T>): MergeArraysResult<T> {
 
   return {
     error: false,
-    message: "Merged Successfully",
+    message: 'Merged Successfully',
     array: merged,
   };
 }

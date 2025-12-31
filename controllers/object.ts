@@ -1,15 +1,15 @@
-import express, { Request, Response } from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import express, { Request, Response } from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
-import { isValidIntentName } from "../lib/helpers";
+import { isValidIntentName } from '../lib/helpers';
 
 const router = express.Router();
 
 router.post(
-  "/rules/remove-by-intent-name",
+  '/rules/remove-by-intent-name',
   [
-    body("rulesJson").isArray().withMessage("rulesJson is required and must be an array"),
-    body("searchIntentName").isString().withMessage("searchIntentName is required and must be a string"),
+    body('rulesJson').isArray().withMessage('rulesJson is required and must be an array'),
+    body('searchIntentName').isString().withMessage('searchIntentName is required and must be a string'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -20,10 +20,10 @@ router.post(
     const { rulesJson, searchIntentName } = matchedData(req) as { rulesJson: any[]; searchIntentName: string };
 
     if (!isValidIntentName(searchIntentName)) {
-      return res.status(400).send({ error: "Search intent name contains illegal characters" });
+      return res.status(400).send({ error: 'Search intent name contains illegal characters' });
     }
 
-    const strRegExPattern = ".*\\b" + searchIntentName + "\\b.*";
+    const strRegExPattern = '.*\\b' + searchIntentName + '\\b.*';
     const regExp = new RegExp(strRegExPattern);
 
     const result = rulesJson
@@ -38,10 +38,10 @@ router.post(
 );
 
 router.post(
-  "/responses/remove-by-intent-name",
+  '/responses/remove-by-intent-name',
   [
-    body("responses").isObject().withMessage("responses is required and must be an object"),
-    body("intent").isString().withMessage("intent is required and must be a string"),
+    body('responses').isObject().withMessage('responses is required and must be an object'),
+    body('intent').isString().withMessage('intent is required and must be a string'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -52,7 +52,7 @@ router.post(
     const { responses, intent } = matchedData(req) as { responses: Record<string, any>; intent: string };
 
     if (!isValidIntentName(intent)) {
-      return res.status(400).send({ error: "Intent name contains illegal characters" });
+      return res.status(400).send({ error: 'Intent name contains illegal characters' });
     }
 
     const pattern = new RegExp(`^utter_${intent}$`);
@@ -68,7 +68,7 @@ router.post(
   },
 );
 
-router.post("/replace/key-value-in-obj", (req: Request, res: Response) => {
+router.post('/replace/key-value-in-obj', (req: Request, res: Response) => {
   let { object, oldKey, newKey, newValue } = req.body as {
     object: Record<string, any>;
     oldKey: string;
@@ -89,11 +89,11 @@ router.post("/replace/key-value-in-obj", (req: Request, res: Response) => {
 });
 
 router.post(
-  "/array/replace-next-element",
+  '/array/replace-next-element',
   [
-    body("array").isArray().withMessage("array is required and must be an array"),
-    body("element").isString().withMessage("element is required and must be a string"),
-    body("newInput").isNumeric().withMessage("newInput is required and must be a number"),
+    body('array').isArray().withMessage('array is required and must be an array'),
+    body('element').isString().withMessage('element is required and must be a string'),
+    body('newInput').isNumeric().withMessage('newInput is required and must be a number'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -114,8 +114,8 @@ router.post(
 );
 
 router.post(
-  "/get-selected-csa-nps",
-  [body("data").isArray().withMessage("data is required and must be an array")],
+  '/get-selected-csa-nps',
+  [body('data').isArray().withMessage('data is required and must be an array')],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

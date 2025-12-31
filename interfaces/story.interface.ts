@@ -1,4 +1,4 @@
-import { RuleStoryStep } from "./rule-story-step.interface";
+import { RuleStoryStep } from './rule-story-step.interface';
 
 export interface Story {
   story: string;

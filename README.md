@@ -22,6 +22,8 @@ curl --location --request POST 'http://localhost:3000/hbs/my/restful/url/myFile'
 
 ## Javascript
 
+NB! `js` is for historic/backwards-compatibility and due to other Bürokratt services mapping `js` folder as volumes. Code itself is TypeScript.
+
 Javascript files go to `js` directory.
 
 Example on how to access javascript files in browser:

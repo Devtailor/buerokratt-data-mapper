@@ -1,5 +1,5 @@
-import express, { Request, Response } from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import express, { Request, Response } from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -20,11 +20,11 @@ type FormRequestBody = {
 };
 
 router.post(
-  "/detailed-information",
+  '/detailed-information',
   [
-    body("name").isString().withMessage("name is required and must be a string"),
-    body("slots").isObject().withMessage("slots is required and must be a JSON object"),
-    body("responses").isArray().withMessage("responses is required and must be an array"),
+    body('name').isString().withMessage('name is required and must be a string'),
+    body('slots').isObject().withMessage('slots is required and must be a JSON object'),
+    body('responses').isArray().withMessage('responses is required and must be an array'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -34,9 +34,9 @@ router.post(
 
     const { name, slots, responses } = matchedData(req) as FormRequestBody;
 
-    const responseText = "utter_" + name;
+    const responseText = 'utter_' + name;
     let result = responses.find((fd) => fd.name === responseText);
-    const formResponse = result ? result.response[0].text : "";
+    const formResponse = result ? result.response[0].text : '';
 
     let ignoredIntents: string[] = [];
     const slotInfo: { slot_name: string; question: string }[] = [];
@@ -48,7 +48,7 @@ router.post(
     if (slots.required_slots) {
       for (const slotName of slots.required_slots) {
         const slotQuestion = responses.find((response) => {
-          return response.name === "utter_ask_" + slotName;
+          return response.name === 'utter_ask_' + slotName;
         });
         if (slotQuestion) {
           const newObj = {

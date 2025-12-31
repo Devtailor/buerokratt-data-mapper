@@ -1,7 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from 'fs/promises';
+import path from 'path';
 
-import { Response } from "express";
+import { Response } from 'express';
 
 export async function deleteAllThatContains(currentPath: string, keyword: string, res: Response): Promise<void> {
   try {
@@ -9,7 +9,7 @@ export async function deleteAllThatContains(currentPath: string, keyword: string
     const filesToDelete = files.filter((file) => file.includes(keyword));
 
     if (filesToDelete.length === 0) {
-      res.status(200).json({ message: "No files found containing the specified keyword" });
+      res.status(200).json({ message: 'No files found containing the specified keyword' });
       return;
     }
 
@@ -23,9 +23,9 @@ export async function deleteAllThatContains(currentPath: string, keyword: string
       }),
     );
 
-    res.status(201).json({ message: "Files deleted successfully" });
+    res.status(201).json({ message: 'Files deleted successfully' });
   } catch (err) {
-    console.error("Error reading directory:", err);
-    res.status(500).json({ message: "Unable to read directory" });
+    console.error('Error reading directory:', err);
+    res.status(500).json({ message: 'Unable to read directory' });
   }
 }

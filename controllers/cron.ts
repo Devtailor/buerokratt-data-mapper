@@ -1,13 +1,13 @@
-import express, { Request, Response } from "express";
-import { body, matchedData, validationResult } from "express-validator";
+import express, { Request, Response } from 'express';
+import { body, matchedData, validationResult } from 'express-validator';
 
 const router = express.Router();
 
 router.post(
-  "/generate-expression-date-days",
+  '/generate-expression-date-days',
   [
-    body("date").isString().withMessage("date must be a string"),
-    body("days").isString().withMessage("days must be a string"),
+    body('date').isString().withMessage('date must be a string'),
+    body('days').isString().withMessage('days must be a string'),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -18,8 +18,8 @@ router.post(
     const { date, days } = matchedData(req) as { date: string; days: string };
 
     const startFrom = Date.parse(date);
-    const time = date.split("T")[1].split(".")[0];
-    const cronTime = time.split(":").reverse().join(" ");
+    const time = date.split('T')[1].split('.')[0];
+    const cronTime = time.split(':').reverse().join(' ');
     const expression = `${cronTime} ? * ${days} *`;
     const result = {
       expression: expression,

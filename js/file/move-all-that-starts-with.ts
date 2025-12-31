@@ -1,7 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from 'fs/promises';
+import path from 'path';
 
-import { Response } from "express";
+import { Response } from 'express';
 
 export async function moveAllThatStartsWith(
   currentPath: string,
@@ -15,7 +15,7 @@ export async function moveAllThatStartsWith(
     const filesToMove = files.filter((file) => file.startsWith(keyword));
 
     if (filesToMove.length === 0) {
-      res.status(200).json({ message: "No files found with the specified prefix" });
+      res.status(200).json({ message: 'No files found with the specified prefix' });
       return;
     }
 
@@ -35,9 +35,9 @@ export async function moveAllThatStartsWith(
       }),
     );
 
-    res.status(201).json({ message: "Files moved successfully" });
+    res.status(201).json({ message: 'Files moved successfully' });
   } catch (err) {
-    console.error("Unable to read directory:", err);
-    res.status(500).json({ message: "Unable to read directory" });
+    console.error('Unable to read directory:', err);
+    res.status(500).json({ message: 'Unable to read directory' });
   }
 }

@@ -1,9 +1,9 @@
-import path from "path";
+import path from 'path';
 
-import express, { Request, Response } from "express";
-import { parse as parseYmlToJson } from "yaml";
+import express, { Request, Response } from 'express';
+import { parse as parseYmlToJson } from 'yaml';
 
-import { getAllFiles, getUrl, readFile } from "../js/util";
+import { getAllFiles, getUrl, readFile } from '../js/util';
 
 const router = express.Router();
 
@@ -14,19 +14,19 @@ type Service = {
   url: string;
 };
 
-type StickyService = Omit<Service, "name" | "url">;
+type StickyService = Omit<Service, 'name' | 'url'>;
 
 export type ServiceMap = Record<string, StickyService | StickyService[]>;
 
-router.get("/list", (_req: Request, res: Response) => {
+router.get('/list', (_req: Request, res: Response) => {
   const services: Service[] = [];
 
-  getAllFiles("/Ruuter")
-    .filter((filename) => filename.endsWith(".yml"))
+  getAllFiles('/Ruuter')
+    .filter((filename) => filename.endsWith('.yml'))
     .map(path.parse)
     .forEach(({ name, dir }) => {
-      const type = dir.includes("/POST/") ? "POST" : "GET";
-      const status = dir.endsWith("/inactive") ? "inactive" : "active";
+      const type = dir.includes('/POST/') ? 'POST' : 'GET';
+      const status = dir.endsWith('/inactive') ? 'inactive' : 'active';
       const url = getUrl(dir);
       services.push({ name, type, status, url });
     });
@@ -34,16 +34,16 @@ router.get("/list", (_req: Request, res: Response) => {
   return res.status(200).json(services);
 });
 
-router.get("/sticky", (_req: Request, res: Response) => {
+router.get('/sticky', (_req: Request, res: Response) => {
   const services: ServiceMap = {};
 
-  getAllFiles("/Ruuter")
-    .filter((filename) => filename.includes("/sticky/"))
-    .filter((filename) => filename.endsWith(".yml"))
+  getAllFiles('/Ruuter')
+    .filter((filename) => filename.includes('/sticky/'))
+    .filter((filename) => filename.endsWith('.yml'))
     .map(path.parse)
     .forEach(({ name, dir }) => {
-      const type = dir.includes("/POST/") ? "POST" : "GET";
-      const status = dir.endsWith("/inactive") ? "inactive" : "active";
+      const type = dir.includes('/POST/') ? 'POST' : 'GET';
+      const status = dir.endsWith('/inactive') ? 'inactive' : 'active';
       if (!services[name]) {
         services[name] = { type, status };
       } else if (Array.isArray(services[name])) {
@@ -56,18 +56,18 @@ router.get("/sticky", (_req: Request, res: Response) => {
   return res.status(200).json(services);
 });
 
-router.post("/sticky/steps", (req: Request<{}, {}, { name: string }>, res: Response) => {
-  const file_path = getAllFiles("/Ruuter")
-    .filter((filename) => filename.includes("/sticky/"))
+router.post('/sticky/steps', (req: Request<{}, {}, { name: string }>, res: Response) => {
+  const file_path = getAllFiles('/Ruuter')
+    .filter((filename) => filename.includes('/sticky/'))
     .filter((filename) => filename.endsWith(`/${req.body.name}.yml`))
     .at(0);
 
   if (!file_path) {
-    return res.status(404).json({ message: "Sticky DSL not found" });
+    return res.status(404).json({ message: 'Sticky DSL not found' });
   }
 
   try {
-    const normalizedPath = path.normalize(file_path).replace(/^(\.\.|\.\.[/\\]?)+/, "");
+    const normalizedPath = path.normalize(file_path).replace(/^(\.\.|\.\.[/\\]?)+/, '');
     const ymlFile = readFile(normalizedPath);
     const jsonFile = parseYmlToJson(ymlFile);
     return res.status(200).json(jsonFile);

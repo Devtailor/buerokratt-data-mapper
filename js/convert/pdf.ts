@@ -1,5 +1,5 @@
-import { Message } from "../../interfaces";
-import { extractMessageInfo } from "../util";
+import { Message } from '../../interfaces';
+import { extractMessageInfo } from '../util';
 
 export const generateMessagesTable = (
   template: string,
@@ -23,5 +23,5 @@ export const generateMessagesTable = (
         </tr>`;
   }
 
-  return template.replace("{{{table}}}", _html);
+  return template.replace('{{{table}}}', _html);
 };
