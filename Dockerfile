@@ -24,7 +24,7 @@ WORKDIR /workspace/app/
 USER node
 EXPOSE 3000
 
-COPY --from=build --chown=node:node /workspace/app/dist ./dist
+COPY --from=build --chown=node:node /workspace/app/dist ./
 COPY --from=build --chown=node:node /workspace/app/package.json ./
 COPY --from=build --chown=node:node /workspace/app/node_modules ./node_modules
 COPY --from=build --chown=node:node /workspace/app/.env ./
