@@ -51,13 +51,37 @@ router.post('/json_to_yaml_domain', (req: Request, res: Response) => {
 router.post('/json_to_yaml_data', (req: Request, res: Response) => {
   try {
     let result = stringify(req.body.data, { lineWidth: -1 });
-    result = result.replace(/(\n[^\s].+?:)/g, '\n$1');
+    result = result.replaceAll(/(\n[^\s].+?:)/g, '\n$1');
     result = result.trimStart();
     res.send({ yaml: result });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error formatting yaml lines', error);
     const result = stringify(req.body.data);
     res.send({ yaml: result });
+  }
+});
+
+router.post('/json_to_yaml_data_multiple', (req: Request, res: Response) => {
+  try {
+    const { data: dataArray } = req.body;
+    const results = dataArray.map((item: any) => {
+      try {
+        let result = stringify(item, { lineWidth: -1 });
+        result = result.replaceAll(/(\n[^\s].+?:)/g, '\n$1');
+        result = result.trimStart();
+        return result;
+      } catch (error) {
+        console.error('Error formatting yaml for item', error);
+        return stringify(item);
+      }
+    });
+    res.send({ yamls: results });
+  } catch (error: any) {
+    console.error('Error processing yaml conversion', error);
+    res.status(500).send({
+      error: 'Failed to process yaml conversion',
+      details: error.message,
+    });
   }
 });
 
