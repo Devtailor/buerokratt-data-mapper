@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { convertJsonToYamlDomain, escapeTextFieldNewlines } from './jsonToYamlDomain.js';
+import { convertJsonToYamlDomain, escapeTextFieldNewlines } from './';
 
 describe('convertJsonToYamlDomain', () => {
   it('should convert simple JSON to YAML with proper text field handling', () => {

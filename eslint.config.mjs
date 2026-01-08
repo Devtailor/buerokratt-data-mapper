@@ -2,6 +2,7 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import eslintPluginSortExportAll from 'eslint-plugin-sort-export-all';
 import unusedImports from 'eslint-plugin-unused-imports';
 import * as importPlugin from 'eslint-plugin-import';
 import vitest from '@vitest/eslint-plugin';
@@ -40,6 +41,7 @@ export default [
       'unused-imports': unusedImports,
       import: importPlugin,
       sonarjs: sonarjs,
+      'sort-export-all': eslintPluginSortExportAll,
     },
     rules: {
       ...eslint.configs.recommended.rules,
@@ -74,57 +76,7 @@ export default [
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      'sort-imports': [
-        'error',
-        {
-          ignoreCase: true,
-          ignoreDeclarationSort: true,
-        },
-      ],
-      ...sonarjs.configs.recommended.rules,
-    },
-  },
-
-  // JavaScript files configuration
-  {
-    files: ['**/*.js', '**/*.mjs'],
-    ...eslint.configs.recommended,
-    ...eslintPluginPrettierRecommended,
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      ecmaVersion: 2023,
-      sourceType: 'module',
-    },
-    plugins: {
-      'unused-imports': unusedImports,
-      import: importPlugin,
-      sonarjs: sonarjs,
-    },
-    rules: {
-      'no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
-          caughtErrors: 'all',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', ['parent', 'sibling'], 'index'],
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
+      'sort-export-all/sort-export-all': 'warn',
       'sort-imports': [
         'error',
         {
@@ -138,6 +90,6 @@ export default [
 
   // Global ignores
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['eslint.config.mjs', 'dist'],
   },
 ];
