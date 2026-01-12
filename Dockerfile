@@ -21,6 +21,9 @@ RUN npm run build
 # Runtime
 FROM node:20.19.3-alpine AS run
 WORKDIR /workspace/app/
+
+RUN apk add --no-cache curl bash
+
 USER node
 EXPOSE 3000
 
