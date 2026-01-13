@@ -22,7 +22,10 @@ RUN npm run build
 FROM node:20.19.3-alpine AS run
 WORKDIR /workspace/app/
 
-RUN apk add --no-cache curl bash
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+RUN apk add --no-cache curl bash chromium
 
 USER node
 EXPOSE 3000

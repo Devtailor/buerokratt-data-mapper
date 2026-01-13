@@ -5,7 +5,7 @@ let browser: puppeteer.Browser | undefined;
 async function getBrowser(): Promise<puppeteer.Browser> {
   if (browser) return browser;
 
-  browser = await puppeteer.launch({
+  const launchOptions: puppeteer.LaunchOptions = {
     args: [
       '--no-sandbox',
       // Necessary with newer versions of Puppeteer
@@ -17,7 +17,13 @@ async function getBrowser(): Promise<puppeteer.Browser> {
       '--disable-infobars',
       '--headless=new',
     ],
-  });
+  };
+
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+
+  browser = await puppeteer.launch(launchOptions);
 
   return browser;
 }
