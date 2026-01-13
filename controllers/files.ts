@@ -35,6 +35,15 @@ router.post('/create', (req: Request<{}, {}, { file_path: string; content: strin
   return res.status(result.error ? 400 : 200).json(result);
 });
 
+router.post(
+  '/create_multiple',
+  async (req: Request<{}, {}, { file_paths: string[]; contents: string[] }>, res: Response) => {
+    const { file_paths, contents } = req.body;
+    const results = await Promise.all(file_paths.map((fp, i) => createFile(buildContentFilePath(fp), contents[i])));
+    res.status(results.some((r) => r.error) ? 400 : 200).json({ results });
+  },
+);
+
 router.post('/move', (req: Request<{}, {}, { file_path: string; new_path: string }>, res: Response) => {
   const { file_path, new_path } = req.body;
 
@@ -94,7 +103,7 @@ router.post(
     const filepath = buildContentFilePath(path);
     // This sanitization is done to resolve snyk errors,
     // this is actually not needed here according to the implementation logic
-    const normalizedKeyWord = path.normalize(keyword).replace(/^(\.\.|\.\.[/\\]?)+/, '');
+    const normalizedKeyWord = keyword.normalize('NFC').replace(/^(\.\.|\.\.[/\\]?)+/, '');
     await deleteAllThatStartsWith(filepath, normalizedKeyWord, res);
   },
 );
