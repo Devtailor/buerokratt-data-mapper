@@ -490,71 +490,50 @@ export function replaceDocs(
 
   context?.citations?.forEach((citation, index) => {
     const docKey = `[doc${index + 1}]`;
-    if (!replacedContent.includes(docKey)) {
-      return;
-    }
-
-    const linkLabel = String(links.length + 1)
-      .split('')
-      .map((digit) => superscriptMap[Number(digit)])
-      .join('');
-
-    const linkInfo = createLinkInfo(citation, linkLabel);
-
-    if (linkInfo) {
-      replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-      links.push(linkInfo);
-    } else {
-      replacedContent = replacedContent.replaceAll(docKey, '');
+    if (replacedContent.includes(docKey)) {
+      try {
+        const parsedUrl = JSON.parse(citation.url).join('\\n');
+        let linkLabel = String(links.length + 1)
+          .split('')
+          .map((digit) => superscriptMap[Number(digit)])
+          .join('');
+        replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
+        links.push(`  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${parsedUrl}\\n\\n`);
+      } catch (error) {
+        console.error('Error parsing URL as JSON array:', error);
+        try {
+          new URL(citation.url);
+          let linkLabel = String(links.length + 1)
+            .split('')
+            .map((digit) => superscriptMap[Number(digit)])
+            .join('');
+          replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
+          links.push(`  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${citation.url}\\n\\n`);
+        } catch (error) {
+          console.error('Error parsing URL as JSON array:', error);
+          try {
+            new URL(citation.filepath);
+            let linkLabel = String(links.length + 1)
+              .split('')
+              .map((digit) => superscriptMap[Number(digit)])
+              .join('');
+            replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
+            links.push(`  • ${linkLabel} [${citation.title}](${citation.filepath})`);
+          } catch {
+            replacedContent = replacedContent.replaceAll(docKey, '');
+          }
+        }
+      }
     }
   });
 
-  if (links.length > 0) {
-    replacedContent += `\n\n${links.join('')}`;
-  }
-
-  replacedContent = replacedContent.replaceAll('\n', '\\n').replaceAll('"', '"');
+  replacedContent = replacedContent.replaceAll('\n', '\\n').replaceAll('"', '\"');
 
   if (links.length > 0) {
     replacedContent += '\\n\\nViited:\\n' + links.join('\\n');
   }
 
   return replacedContent;
-}
-
-function createLinkInfo(citation: { url: string; title: string; filepath: string }, linkLabel: string): string | null {
-  const parsedUrl = tryParseUrlArray(citation.url);
-  if (parsedUrl) {
-    return `  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${parsedUrl}\\n\\n`;
-  }
-
-  if (isValidUrl(citation.url)) {
-    return `  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${citation.url}\\n\\n`;
-  }
-
-  if (isValidUrl(citation.filepath)) {
-    return `  • ${linkLabel} [${citation.title}](${citation.filepath})`;
-  }
-
-  return null;
-}
-
-function tryParseUrlArray(url: string): string | undefined {
-  try {
-    const parsed = JSON.parse(url);
-    return Array.isArray(parsed) ? parsed.join('\\n') : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function isValidUrl(urlString: string): boolean {
-  try {
-    new URL(urlString);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export function capitalizeFirstLetter(string: string): string {
