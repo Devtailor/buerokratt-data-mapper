@@ -480,45 +480,99 @@ export function formatDate(date: string): string {
   return `${day}.${month}.${year}`;
 }
 
+function getUniqueCitationsAndMapping(citations: { url: string; title: string; filepath: string }[]): {
+  uniqueCitations: { citation: { url: string; title: string; filepath: string }; originalIndex: number }[];
+  originalDocToUniqueDoc: Map<number, number>;
+} {
+  const uniqueCitations: {
+    citation: { url: string; title: string; filepath: string };
+    originalIndex: number;
+  }[] = [];
+  const citationToUniqueIndex = new Map<string, number>();
+  const originalDocToUniqueDoc = new Map<number, number>();
+
+  citations.forEach((citation, originalIndex) => {
+    const citationKey = `${citation.filepath}`;
+    const originalDocNum = originalIndex + 1;
+
+    if (citationToUniqueIndex.has(citationKey)) {
+      const uniqueDocNum = citationToUniqueIndex.get(citationKey)!;
+      originalDocToUniqueDoc.set(originalDocNum, uniqueDocNum);
+      return;
+    }
+
+    const uniqueIndex = uniqueCitations.length;
+    citationToUniqueIndex.set(citationKey, uniqueIndex);
+    uniqueCitations.push({ citation, originalIndex: originalDocNum });
+    originalDocToUniqueDoc.set(originalDocNum, uniqueIndex);
+  });
+
+  return { uniqueCitations, originalDocToUniqueDoc };
+}
+
 export function replaceDocs(
   content: string,
   context: { citations?: { url: string; title: string; filepath: string }[] },
 ): string {
+  if (!context?.citations) return content.replaceAll('\n', '\\n').replaceAll('"', '\"');
+
+  const { uniqueCitations, originalDocToUniqueDoc } = getUniqueCitationsAndMapping(context.citations);
+
   let replacedContent = content;
+
+  originalDocToUniqueDoc.forEach((uniqueDocIndex, originalDocNum) => {
+    const uniqueDocNum = uniqueDocIndex + 1;
+
+    if (uniqueDocNum !== originalDocNum) {
+      const originalKey = `[doc${originalDocNum}]`;
+      const uniqueKey = `[doc${uniqueDocNum}]`;
+
+      if (replacedContent.includes(originalKey)) {
+        replacedContent = replacedContent.replaceAll(originalKey, uniqueKey);
+      }
+    }
+  });
+
   const links: string[] = [];
   const superscriptMap = '⁰¹²³⁴⁵⁶⁷⁸⁹';
 
-  context?.citations?.forEach((citation, index) => {
-    const docKey = `[doc${index + 1}]`;
+  uniqueCitations.forEach((uniqueItem, uniqueIndex) => {
+    const uniqueDocNum = uniqueIndex + 1;
+    const docKey = `[doc${uniqueDocNum}]`;
+
     if (replacedContent.includes(docKey)) {
       try {
-        const parsedUrl = JSON.parse(citation.url).join('\\n');
-        let linkLabel = String(links.length + 1)
+        const parsedUrl = JSON.parse(uniqueItem.citation.url).join('\\n');
+        let linkLabel = String(uniqueDocNum)
           .split('')
           .map((digit) => superscriptMap[Number(digit)])
           .join('');
         replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-        links.push(`  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${parsedUrl}\\n\\n`);
+        links.push(
+          `  • ${linkLabel} [${uniqueItem.citation.title}](${uniqueItem.citation.filepath})\\n- ${parsedUrl}\\n\\n`,
+        );
       } catch (error) {
         console.error('Error parsing URL as JSON array:', error);
         try {
-          new URL(citation.url);
-          let linkLabel = String(links.length + 1)
+          new URL(uniqueItem.citation.url);
+          let linkLabel = String(uniqueDocNum)
             .split('')
             .map((digit) => superscriptMap[Number(digit)])
             .join('');
           replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-          links.push(`  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${citation.url}\\n\\n`);
+          links.push(
+            `  • ${linkLabel} [${uniqueItem.citation.title}](${uniqueItem.citation.filepath})\\n- ${uniqueItem.citation.url}\\n\\n`,
+          );
         } catch (error) {
           console.error('Error parsing URL as JSON array:', error);
           try {
-            new URL(citation.filepath);
-            let linkLabel = String(links.length + 1)
+            new URL(uniqueItem.citation.filepath);
+            let linkLabel = String(uniqueDocNum)
               .split('')
               .map((digit) => superscriptMap[Number(digit)])
               .join('');
             replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-            links.push(`  • ${linkLabel} [${citation.title}](${citation.filepath})`);
+            links.push(`  • ${linkLabel} [${uniqueItem.citation.title}](${uniqueItem.citation.filepath})`);
           } catch {
             replacedContent = replacedContent.replaceAll(docKey, '');
           }
@@ -527,7 +581,10 @@ export function replaceDocs(
     }
   });
 
-  replacedContent = replacedContent.replaceAll('\n', '\\n').replaceAll('"', '\"');
+  replacedContent = replacedContent
+    .replaceAll('\n', '\\n')
+    .replaceAll('"', '\"')
+    .replaceAll(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\1+/g, '$1');
 
   if (links.length > 0) {
     replacedContent += '\\n\\nViited:\\n' + links.join('\\n');
