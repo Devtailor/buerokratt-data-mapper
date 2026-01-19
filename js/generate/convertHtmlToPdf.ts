@@ -33,7 +33,24 @@ export async function convertHtmlToPdf(html: string): Promise<string> {
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'load', timeout: 0 });
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const url = request.url();
+
+      if (url.startsWith('data:')) {
+        request.continue();
+      } else {
+        request.abort();
+      }
+    });
+
+    await page.setJavaScriptEnabled(false);
+
+    await page.setContent(html, {
+      waitUntil: 'domcontentloaded',
+      timeout: 0,
+    });
 
     const uintArray = await page.pdf({
       format: 'A4',

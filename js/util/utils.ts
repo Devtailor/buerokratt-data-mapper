@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
+import sanitizeHtml from 'sanitize-html';
 import { parse as parseYmlToJson } from 'yaml';
 
 const assignSecrets = (data: Record<string, unknown>, result: Record<string, unknown>): void => {
@@ -142,3 +142,13 @@ export const parseJwt = (token: string): any => {
     return null;
   }
 };
+
+export function sanitizeHtmlForPdf(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: ['div', 'span', 'p', 'br', 'b', 'i', 'table', 'tr', 'th', 'td'],
+    allowedAttributes: {
+      '*': ['style', 'class'],
+    },
+    disallowedTagsMode: 'discard',
+  });
+}
