@@ -32,10 +32,18 @@ import { generateMessagesTable } from './js/convert';
 import { sendMockEmail } from './js/email';
 import { mergeYaml, readFile } from './js/file';
 import { convertHtmlToPdf, generateButtonsList } from './js/generate';
-import { base64ToText, buildContentFilePath, getHeadersMapping, parseBoolean, parseJwt } from './js/util';
+import {
+  base64ToText,
+  buildContentFilePath,
+  getHeadersMapping,
+  parseBoolean,
+  parseJwt,
+  sanitizeHtmlForPdf,
+} from './js/util';
 import { requestLoggerMiddleware } from './lib';
 import * as helpers from './lib/helpers';
 import './watchers/watcher';
+import sanitizeHtml from 'sanitize-html';
 
 dotenv.config();
 
@@ -190,10 +198,26 @@ app.post(
     }>(req);
     const { messages, csaTitleVisible, csaNameVisible } = data;
 
+    const sanitizedMessages = messages.map((message) => {
+      return {
+        ...message,
+        content: sanitizeHtml(message.content ?? ''),
+      };
+    });
+
     const template = fs.readFileSync(__dirname + '/views/pdf.handlebars').toString();
-    const html = generateMessagesTable(template, messages, parseBoolean(csaTitleVisible), parseBoolean(csaNameVisible));
+
     try {
-      res.json({ response: await convertHtmlToPdf(html) });
+      const html = generateMessagesTable(
+        template,
+        sanitizedMessages,
+        parseBoolean(csaTitleVisible),
+        parseBoolean(csaNameVisible),
+      );
+
+      const sanitizedHtml = sanitizeHtmlForPdf(html);
+      const pdf = await convertHtmlToPdf(sanitizedHtml);
+      res.json({ response: pdf });
     } catch (error) {
       console.error('Error generating PDF:', error);
       res.status(500).json({ message: 'Error generating PDF' });

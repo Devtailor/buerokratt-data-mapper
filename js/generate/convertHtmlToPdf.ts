@@ -1,4 +1,4 @@
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer-core';
 
 let browser: puppeteer.Browser | undefined;
 
@@ -8,8 +8,6 @@ async function getBrowser(): Promise<puppeteer.Browser> {
   const launchOptions: puppeteer.LaunchOptions = {
     args: [
       '--no-sandbox',
-      // Necessary with newer versions of Puppeteer
-      // https://github.com/puppeteer/puppeteer/issues/12189
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--disable-extensions',
@@ -19,9 +17,7 @@ async function getBrowser(): Promise<puppeteer.Browser> {
     ],
   };
 
-  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-  }
+  launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser';
 
   browser = await puppeteer.launch(launchOptions);
 
@@ -33,7 +29,24 @@ export async function convertHtmlToPdf(html: string): Promise<string> {
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'load', timeout: 0 });
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const url = request.url();
+
+      if (url.startsWith('data:')) {
+        request.continue();
+      } else {
+        request.abort();
+      }
+    });
+
+    await page.setJavaScriptEnabled(false);
+
+    await page.setContent(html, {
+      waitUntil: 'domcontentloaded',
+      timeout: 0,
+    });
 
     const uintArray = await page.pdf({
       format: 'A4',
