@@ -206,17 +206,18 @@ app.post(
     });
 
     const template = fs.readFileSync(__dirname + '/views/pdf.handlebars').toString();
-    const html = generateMessagesTable(
-      template,
-      sanitizedMessages,
-      parseBoolean(csaTitleVisible),
-      parseBoolean(csaNameVisible),
-    );
-
-    const sanitizedHtml = sanitizeHtmlForPdf(html);
 
     try {
-      res.json({ response: await convertHtmlToPdf(sanitizedHtml) });
+      const html = generateMessagesTable(
+        template,
+        sanitizedMessages,
+        parseBoolean(csaTitleVisible),
+        parseBoolean(csaNameVisible),
+      );
+
+      const sanitizedHtml = sanitizeHtmlForPdf(html);
+      const pdf = await convertHtmlToPdf(sanitizedHtml);
+      res.json({ response: pdf });
     } catch (error) {
       console.error('Error generating PDF:', error);
       res.status(500).json({ message: 'Error generating PDF' });
