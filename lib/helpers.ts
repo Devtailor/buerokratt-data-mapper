@@ -584,6 +584,7 @@ export function replaceDocs(
   replacedContent = replacedContent
     .replaceAll('\n', '\\n')
     .replaceAll('"', '\"')
+    .replaceAll(/([)\\/\p{L}\p{N}])⁽/gu, '$1 ⁽')
     .replaceAll(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\1+/g, '$1');
 
   if (links.length > 0) {
