@@ -215,6 +215,24 @@ describe('helpers', () => {
     expect(helpers.replaceDocs(content, context)).toMatch(/Viited/);
   });
 
+  it('replaceDocs adds space before citation when it follows a link (closing paren)', () => {
+    const content = 'See (https://example.ee/cites)[doc1] for more.';
+    const context = {
+      citations: [{ url: 'https://a', title: 'Example', filepath: 'https://example.ee/cites' }],
+    };
+    const result = helpers.replaceDocs(content, context);
+    expect(result).toMatch(/cites\) ⁽¹⁾/);
+  });
+
+  it('replaceDocs adds space before citation when it follows a bare URL', () => {
+    const content = 'Lisainfot leiate „CITES" https://kliimaministeerium.ee/cites[doc1].';
+    const context = {
+      citations: [{ url: 'https://a', title: 'Example', filepath: 'https://kliimaministeerium.ee/cites' }],
+    };
+    const result = helpers.replaceDocs(content, context);
+    expect(result).toMatch(/cites ⁽¹⁾/);
+  });
+
   it('toArray wraps non-array', () => {
     expect(helpers.toArray(1)).toEqual([1]);
     expect(helpers.toArray([1, 2])).toEqual([1, 2]);
