@@ -510,6 +510,37 @@ function getUniqueCitationsAndMapping(citations: { url: string; title: string; f
   return { uniqueCitations, originalDocToUniqueDoc };
 }
 
+function toSuperscript(num: number, superscriptMap: string): string {
+  return String(num)
+    .split('')
+    .map((digit) => superscriptMap[Number(digit)])
+    .join('');
+}
+
+function buildLinkLine(
+  displayNum: number,
+  citation: { url: string; title: string; filepath: string },
+  superscriptMap: string,
+): string {
+  const linkLabel = toSuperscript(displayNum, superscriptMap);
+  try {
+    const parsedUrl = JSON.parse(citation.url).join('\\n');
+    return `  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${parsedUrl}\\n\\n`;
+  } catch {
+    try {
+      new URL(citation.url);
+      return `  • ${linkLabel} [${citation.title}](${citation.filepath})\\n- ${citation.url}\\n\\n`;
+    } catch {
+      try {
+        new URL(citation.filepath);
+        return `  • ${linkLabel} [${citation.title}](${citation.filepath})`;
+      } catch {
+        return '';
+      }
+    }
+  }
+}
+
 export function replaceDocs(
   content: string,
   context: { citations?: { url: string; title: string; filepath: string }[] },
@@ -518,68 +549,45 @@ export function replaceDocs(
 
   const { uniqueCitations, originalDocToUniqueDoc } = getUniqueCitationsAndMapping(context.citations);
 
+  const appearanceOrder: number[] = [];
+  const seenUnique = new Set<number>();
+  const docRefRegex = /\[doc(\d+)\]/g;
+  let match: RegExpExecArray | null;
+  while ((match = docRefRegex.exec(content)) !== null) {
+    const originalDocNum = Number(match[1]);
+    const uniqueIndex = originalDocToUniqueDoc.get(originalDocNum);
+    if (uniqueIndex === undefined) continue;
+    if (!seenUnique.has(uniqueIndex)) {
+      seenUnique.add(uniqueIndex);
+      appearanceOrder.push(uniqueIndex);
+    }
+  }
+
+  const uniqueIndexToDisplayNum = new Map<number, number>();
+  appearanceOrder.forEach((uniqueIndex, i) => {
+    uniqueIndexToDisplayNum.set(uniqueIndex, i + 1);
+  });
+
+  const superscriptMap = '⁰¹²³⁴⁵⁶⁷⁸⁹';
   let replacedContent = content;
 
-  originalDocToUniqueDoc.forEach((uniqueDocIndex, originalDocNum) => {
-    const uniqueDocNum = uniqueDocIndex + 1;
-
-    if (uniqueDocNum !== originalDocNum) {
-      const originalKey = `[doc${originalDocNum}]`;
-      const uniqueKey = `[doc${uniqueDocNum}]`;
-
-      if (replacedContent.includes(originalKey)) {
-        replacedContent = replacedContent.replaceAll(originalKey, uniqueKey);
-      }
+  originalDocToUniqueDoc.forEach((uniqueIndex, originalDocNum) => {
+    const displayNum = uniqueIndexToDisplayNum.get(uniqueIndex);
+    if (displayNum === undefined) return;
+    const docKey = `[doc${originalDocNum}]`;
+    const linkLabel = toSuperscript(displayNum, superscriptMap);
+    if (replacedContent.includes(docKey)) {
+      replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
     }
   });
 
   const links: string[] = [];
-  const superscriptMap = '⁰¹²³⁴⁵⁶⁷⁸⁹';
-
-  uniqueCitations.forEach((uniqueItem, uniqueIndex) => {
-    const uniqueDocNum = uniqueIndex + 1;
-    const docKey = `[doc${uniqueDocNum}]`;
-
-    if (replacedContent.includes(docKey)) {
-      try {
-        const parsedUrl = JSON.parse(uniqueItem.citation.url).join('\\n');
-        let linkLabel = String(uniqueDocNum)
-          .split('')
-          .map((digit) => superscriptMap[Number(digit)])
-          .join('');
-        replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-        links.push(
-          `  • ${linkLabel} [${uniqueItem.citation.title}](${uniqueItem.citation.filepath})\\n- ${parsedUrl}\\n\\n`,
-        );
-      } catch (error) {
-        console.error('Error parsing URL as JSON array:', error);
-        try {
-          new URL(uniqueItem.citation.url);
-          let linkLabel = String(uniqueDocNum)
-            .split('')
-            .map((digit) => superscriptMap[Number(digit)])
-            .join('');
-          replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-          links.push(
-            `  • ${linkLabel} [${uniqueItem.citation.title}](${uniqueItem.citation.filepath})\\n- ${uniqueItem.citation.url}\\n\\n`,
-          );
-        } catch (error) {
-          console.error('Error parsing URL as JSON array:', error);
-          try {
-            new URL(uniqueItem.citation.filepath);
-            let linkLabel = String(uniqueDocNum)
-              .split('')
-              .map((digit) => superscriptMap[Number(digit)])
-              .join('');
-            replacedContent = replacedContent.replaceAll(docKey, `⁽${linkLabel}⁾`);
-            links.push(`  • ${linkLabel} [${uniqueItem.citation.title}](${uniqueItem.citation.filepath})`);
-          } catch {
-            replacedContent = replacedContent.replaceAll(docKey, '');
-          }
-        }
-      }
-    }
-  });
+  for (let i = 0; i < appearanceOrder.length; i++) {
+    const uniqueIndex = appearanceOrder[i];
+    const displayNum = i + 1;
+    const line = buildLinkLine(displayNum, uniqueCitations[uniqueIndex].citation, superscriptMap);
+    if (line) links.push(line);
+  }
 
   replacedContent = replacedContent
     .replaceAll('\n', '\\n')
