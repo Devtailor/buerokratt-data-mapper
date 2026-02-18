@@ -422,6 +422,10 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
+    const MIN_ROW_HEIGHT = 16;
+    const POINTS_PER_LINE = 14;
+    const minHeightForWrappedText = (text: string, colWidthChars: number) =>
+      Math.max(MIN_ROW_HEIGHT, (Math.ceil(((text ?? '').length || 1) / colWidthChars) || 1) * POINTS_PER_LINE);
     const dateLocale = language === 'en' ? 'en-GB' : 'et-EE';
     const createdLabel = language === 'en' ? 'Created' : 'Loodud';
     const authorLabel = language === 'en' ? 'Author' : 'Autor';
@@ -439,6 +443,7 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
       const chatNumber = index + 1;
 
       const startRow = worksheet.addRow([chatNumberLabel(chatNumber), '', '']);
+      startRow.height = MIN_ROW_HEIGHT;
       [1, 2, 3].forEach((col) => {
         applyCellStyle(worksheet.getCell(startRow.number, col), {
           fill: {
@@ -452,6 +457,7 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
       });
 
       const chatDataSectionRow = worksheet.addRow([chatDataSectionLabel, '', '']);
+      chatDataSectionRow.height = MIN_ROW_HEIGHT;
       [1, 2, 3].forEach((col) => {
         applyCellStyle(worksheet.getCell(chatDataSectionRow.number, col), {
           fill: {
@@ -465,10 +471,12 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
       chatHeaders.forEach((key, i) => {
         const value = chatRowValues[i] ?? '';
         const row = worksheet.addRow([key, value, '']);
+        row.height = minHeightForWrappedText(String(value), 30);
         [1, 2, 3].forEach((col) => applyCellStyle(worksheet.getCell(row.number, col)));
       });
 
       const messagesSectionRow = worksheet.addRow([messagesSectionLabel, '', '']);
+      messagesSectionRow.height = MIN_ROW_HEIGHT;
       [1, 2, 3].forEach((col) => {
         applyCellStyle(worksheet.getCell(messagesSectionRow.number, col), {
           fill: {
@@ -480,6 +488,7 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
       });
 
       const messagesHeaderRow = worksheet.addRow([createdLabel, authorLabel, messageLabel]);
+      messagesHeaderRow.height = MIN_ROW_HEIGHT;
       [1, 2, 3].forEach((col) => applyCellStyle(worksheet.getCell(messagesHeaderRow.number, col)));
 
       const relatedMessages = chatMessages
