@@ -402,6 +402,20 @@ router.post(
   },
 );
 
+function applyCellStyle(
+  cell: ExcelJS.Cell,
+  opts: { fill?: ExcelJS.Fill; bold?: boolean; font?: { color?: { argb: string } } } = {},
+): void {
+  cell.alignment = {
+    wrapText: true,
+    vertical: 'bottom' as const,
+    horizontal: 'left' as const,
+  };
+  if (opts.fill) cell.fill = opts.fill;
+  if (opts.bold) cell.font = { ...cell.font, bold: true };
+  if (opts.font?.color) cell.font = { ...cell.font, color: opts.font.color };
+}
+
 router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res: Response) => {
   try {
     const { chatMessages, chatHeaders, chatRows, chatIds, language = 'et' } = req.body;
@@ -409,18 +423,69 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
     const dateLocale = language === 'en' ? 'en-GB' : 'et-EE';
-    const messagesHeaderLabel = language === 'en' ? 'Messages' : 'Sõnumid';
+    const createdLabel = language === 'en' ? 'Created' : 'Loodud';
+    const authorLabel = language === 'en' ? 'Author' : 'Autor';
+    const messageLabel = language === 'en' ? 'Message' : 'Sõnum';
+    const chatNumberLabel = (n: number) => (language === 'en' ? `Chat #${n}` : `Vestlus #${n}`);
+    const chatDataSectionLabel = language === 'en' ? 'Chat data' : 'Vestluse andmed';
+    const messagesSectionLabel = language === 'en' ? 'Messages' : 'Sõnumid';
+
+    worksheet.getColumn(1).width = 20;
+    worksheet.getColumn(2).width = 30;
+    worksheet.getColumn(3).width = 100;
 
     chatIds.forEach((chatId: string, index: number) => {
-      worksheet.addRow([language === 'en' ? `Chat #${index + 1}` : `Vestlus #${index + 1}`]);
-      worksheet.addRow(chatHeaders);
-      worksheet.addRow(chatRows[index]);
-      worksheet.addRow([messagesHeaderLabel]);
-      const headerRow = ['', language === 'en' ? 'Created' : 'Loodud', 'Bot', 'Client', 'CSA'];
-      worksheet.addRow(headerRow);
+      const chatRowValues = chatRows[index] ?? [];
+      const chatNumber = index + 1;
+
+      const startRow = worksheet.addRow([chatNumberLabel(chatNumber), '', '']);
+      [1, 2, 3].forEach((col) => {
+        applyCellStyle(worksheet.getCell(startRow.number, col), {
+          fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '2F6EBA' },
+          },
+          bold: true,
+          font: { color: { argb: 'FFFFFFFF' } },
+        });
+      });
+
+      const chatDataSectionRow = worksheet.addRow([chatDataSectionLabel, '', '']);
+      [1, 2, 3].forEach((col) => {
+        applyCellStyle(worksheet.getCell(chatDataSectionRow.number, col), {
+          fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'D9D9D9' },
+          },
+        });
+      });
+
+      chatHeaders.forEach((key, i) => {
+        const value = chatRowValues[i] ?? '';
+        const row = worksheet.addRow([key, value, '']);
+        [1, 2, 3].forEach((col) => applyCellStyle(worksheet.getCell(row.number, col)));
+      });
+
+      const messagesSectionRow = worksheet.addRow([messagesSectionLabel, '', '']);
+      [1, 2, 3].forEach((col) => {
+        applyCellStyle(worksheet.getCell(messagesSectionRow.number, col), {
+          fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'D9D9D9' },
+          },
+        });
+      });
+
+      const messagesHeaderRow = worksheet.addRow([createdLabel, authorLabel, messageLabel]);
+      [1, 2, 3].forEach((col) => applyCellStyle(worksheet.getCell(messagesHeaderRow.number, col)));
+
       const relatedMessages = chatMessages
         .filter((msg: ChatMessage) => msg.chatId === chatId)
         .sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
+
       relatedMessages.forEach((msg: ChatMessage) => {
         const formattedDateTime = new Date(msg.created)
           .toLocaleString(dateLocale, {
@@ -435,28 +500,24 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
           })
           .replaceAll('/', '.')
           .replaceAll(',', '');
-        const row = ['', formattedDateTime, '', '', ''];
-        if (msg.authorRole === 'buerokratt') {
-          row[2] = msg.content;
-        } else if (msg.authorRole === 'end-user') {
-          row[3] = msg.content;
-        } else {
-          row[4] = msg.content;
-        }
-        worksheet.addRow(row);
+        let author: string;
+        if (msg.authorRole === 'buerokratt') author = 'Bürokratt';
+        else if (msg.authorRole === 'end-user') author = language === 'en' ? 'End-user' : 'Lõppkasutaja';
+        else author = 'CSA';
+        const row = worksheet.addRow([formattedDateTime, author, msg.content]);
+        const isEndUser = msg.authorRole === 'end-user';
+        [1, 2, 3].forEach((col) => {
+          applyCellStyle(worksheet.getCell(row.number, col), {
+            fill: isEndUser
+              ? undefined
+              : {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'FFDDEBF7' },
+                },
+          });
+        });
       });
-      worksheet.addRow([]);
-    });
-
-    worksheet.columns.forEach((col) => {
-      if (!col || typeof col.eachCell !== 'function') return;
-
-      let maxLength = 10;
-      col.eachCell({ includeEmpty: true }, (cell) => {
-        const length = cell.value ? cell.value.toString().length : 0;
-        if (length > maxLength) maxLength = length;
-      });
-      col.width = maxLength + 2;
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
