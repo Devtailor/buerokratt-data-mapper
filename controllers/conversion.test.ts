@@ -710,14 +710,15 @@ describe('conversion controller', () => {
         .send({ file: { 'test.xlsx': res.body.base64String } });
 
       expect(xlsxDataArray.body).toEqual([
-        ['Vestlus #1'],
-        ['Header1', 'Header2'],
-        ['Row1', 'Row2'],
-        ['Sõnumid'],
-        ['', 'Loodud', 'Bot', 'Client', 'CSA'],
-        ['', '01.01.2024 12:00:00', 'Buerokratt message', '', ''],
-        ['', '01.01.2024 12:01:00', '', 'End-user message', ''],
-        ['', '01.01.2024 12:02:00', '', '', 'Other message'],
+        ['Vestlus #1', '', ''],
+        ['Vestluse andmed', '', ''],
+        ['Header1', 'Row1', ''],
+        ['Header2', 'Row2', ''],
+        ['Sõnumid', '', ''],
+        ['Loodud', 'Autor', 'Sõnum'],
+        ['01.01.2024 12:00:00', 'Bürokratt', 'Buerokratt message'],
+        ['01.01.2024 12:01:00', 'Lõppkasutaja', 'End-user message'],
+        ['01.01.2024 12:02:00', 'CSA', 'Other message'],
       ]);
       expect(res.status).toBe(200);
     });
@@ -740,18 +741,18 @@ describe('conversion controller', () => {
         .send({ file: { 'test.xlsx': res.body.base64String } });
 
       expect(xlsxDataArray.body).toEqual([
-        ['Chat #1'],
-        ['Header'],
-        ['Row1'],
-        ['Messages'],
-        ['', 'Created', 'Bot', 'Client', 'CSA'],
-        ['', '01.01.2024 12:00:00', 'Chat 1 message', '', ''],
-        ['Chat #2'],
-        ['Header'],
-        ['Row2'],
-        ['Messages'],
-        ['', 'Created', 'Bot', 'Client', 'CSA'],
-        ['', '01.01.2024 15:00:00', '', 'Chat 2 message', ''],
+        ['Chat #1', '', ''],
+        ['Chat data', '', ''],
+        ['Header', 'Row1', ''],
+        ['Messages', '', ''],
+        ['Created', 'Author', 'Message'],
+        ['01.01.2024 12:00:00', 'Bürokratt', 'Chat 1 message'],
+        ['Chat #2', '', ''],
+        ['Chat data', '', ''],
+        ['Header', 'Row2', ''],
+        ['Messages', '', ''],
+        ['Created', 'Author', 'Message'],
+        ['01.01.2024 15:00:00', 'End-user', 'Chat 2 message'],
       ]);
       expect(res.status).toBe(200);
     });
@@ -764,13 +765,21 @@ describe('conversion controller', () => {
         chatIds: ['1'],
       };
 
+      let rowNumber = 0;
+      const mockColumn = { width: 0 };
+      const mockCell = { alignment: {}, fill: undefined, font: {} };
       const mockWorksheet = {
-        addRow: vi.fn(),
-        columns: [null, { eachCell: 'function' }, { eachCell: (): void => {}, width: 0 }],
+        addRow: vi.fn().mockImplementation(() => ({ number: ++rowNumber, height: undefined })),
+        getColumn: vi.fn().mockReturnValue(mockColumn),
+        getCell: vi.fn().mockReturnValue(mockCell),
       };
       vi.spyOn(ExcelJS.Workbook.prototype, 'addWorksheet').mockReturnValueOnce(
         mockWorksheet as unknown as ExcelJS.Worksheet,
       );
+      const mockBuffer = Buffer.from('mock-xlsx');
+      vi.spyOn(ExcelJS.Workbook.prototype, 'xlsx', 'get').mockReturnValueOnce({
+        writeBuffer: vi.fn().mockResolvedValue(mockBuffer),
+      } as unknown as ExcelJS.Xlsx);
 
       const res = await request(app).post('/conversion/chats-to-xlsx').send(data);
 
