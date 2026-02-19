@@ -527,6 +527,7 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
           });
         });
       });
+      worksheet.addRow([]);
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
