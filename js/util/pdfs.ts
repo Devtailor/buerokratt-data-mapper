@@ -73,7 +73,7 @@ const extractEvent = (message: Message): string => {
   if (!translatedEvent) {
     return translatedEvent;
   }
-  return `<span style="color:purple"><b><small>${translatedEvent}</small></b></span>`;
+  return `${translatedEvent}`;
 };
 
 const extractButtons = (buttons: string): string => {
@@ -124,6 +124,14 @@ const translateEvent = (event: string): string => {
     unavailable_holiday: 'Puhkus',
     ask_to_forward_to_csa: 'Paluti vestlus klienditeenindajale üle kanda',
     forwarded_to_backoffice: 'Vestlus suunatakse tagasi kontorisse',
+    'taken-over': 'Klienditeenindaja võttis vestluse üle',
+    continue_chatting_with_bot: 'Jätkake vestlust bürokrattiga',
+    unavailable_holiday_ask_contacts: 'Puhkus ja küsiti kontakte',
+    'pending-assigned': 'määratud kontaktkasutajale',
+    'user-reached': 'võttis kasutajaga ühendust',
+    'user-not-reached': 'ei saanud kasutajaga ühendust',
+    'user-authenticated': 'on autenditud',
+    read: 'Loetud',
   };
   return eventTranslations[event.toLowerCase()] ?? event;
 };
