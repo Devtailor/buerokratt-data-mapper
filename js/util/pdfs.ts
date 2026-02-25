@@ -6,7 +6,11 @@ export const extractMessageInfo = (
   csaTitleVisible: boolean,
   csaNameVisible: boolean,
 ): { author: string; message: string; date: string } => {
-  const author = extractAuthor(message, csaTitleVisible, csaNameVisible);
+  let author = extractAuthor(message, csaTitleVisible, csaNameVisible);
+
+  if (author === 'backoffice-user') {
+    author = 'Bürokratt';
+  }
 
   const date = new Date(message.created).toLocaleDateString('et-EE');
   const time = new Date(message.created).toLocaleTimeString('et-EE', {
@@ -21,7 +25,7 @@ export const extractMessageInfo = (
   else if (message.event) messageContent = extractEvent(message);
 
   return {
-    author,
+    author: author.replaceAll('backoffice-user', ''),
     message: messageContent,
     date: `${time} ${date}`,
   };
