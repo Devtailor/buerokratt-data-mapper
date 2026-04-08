@@ -1,8 +1,9 @@
 export interface ChatsToXlsxBody {
   chatMessages: ChatMessage[];
   chatHeaders: string[];
-  chatRows: (string | number | null)[][];
+  chatRows: (string | number | null)[][] | Record<string, any>[];
   chatIds: string[];
+  chatColumnIds?: string[];
   language?: string;
 }
 

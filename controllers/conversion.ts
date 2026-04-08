@@ -416,9 +416,66 @@ function applyCellStyle(
   if (opts.font?.color) cell.font = { ...cell.font, color: opts.font.color };
 }
 
+function extractRowValues(
+  chatRow: Record<string, any>,
+  columnIds: string[],
+  language: string,
+  dateLocale: string,
+): (string | number | null)[] {
+  return columnIds.map((colId) => {
+    switch (colId) {
+      case 'created':
+      case 'ended': {
+        const val = chatRow[colId];
+        if (!val) return '';
+        return new Date(val)
+          .toLocaleString(dateLocale, {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: 'Europe/Tallinn',
+          })
+          .replaceAll('/', '.')
+          .replaceAll(',', '');
+      }
+      case 'endUserName':
+        return `${chatRow.endUserFirstName ?? ''} ${chatRow.endUserLastName ?? ''}`.trim();
+      case 'customerSupportFullName': {
+        const allCsa: string[] = chatRow.allCsa ?? [];
+        const cleaned = allCsa.filter((n) => !!n && typeof n === 'string' && n.trim() !== '');
+        const filtered = cleaned.length > 1 ? cleaned.filter((n) => n !== 'Bürokratt') : cleaned;
+        return filtered.join(', ') || 'Bürokratt';
+      }
+      case 'feedbackRating': {
+        const val = chatRow.feedbackRating;
+        if (val == null) return '';
+        const max = chatRow.isFiveRatingScale === 'true' ? 5 : 10;
+        return `${val}/${max}`;
+      }
+      case 'contactsMessage': {
+        const val = chatRow.contactsMessage;
+        return val ? (language === 'en' ? 'Yes' : 'Jah') : (language === 'en' ? 'No' : 'Ei');
+      }
+      case 'status':
+        return chatRow.lastMessageEvent ?? '';
+      case 'www':
+        return chatRow.endUserUrl ?? '';
+      default: {
+        const val = chatRow[colId];
+        if (val == null) return '';
+        return typeof val === 'object' ? JSON.stringify(val) : val;
+      }
+    }
+  });
+}
+
 router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res: Response) => {
   try {
-    const { chatMessages, chatHeaders, chatRows, chatIds, language = 'et' } = req.body;
+    const { chatMessages, chatHeaders, chatRows, chatIds, chatColumnIds, language = 'et' } = req.body;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
@@ -439,7 +496,11 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
     worksheet.getColumn(3).width = 100;
 
     chatIds.forEach((chatId: string, index: number) => {
-      const chatRowValues = chatRows[index] ?? [];
+      const rawRow = (chatRows as any[])[index] ?? [];
+      const chatRowValues: (string | number | null)[] =
+        chatColumnIds && !Array.isArray(rawRow)
+          ? extractRowValues(rawRow as Record<string, any>, chatColumnIds, language, dateLocale)
+          : (rawRow as (string | number | null)[]);
       const chatNumber = index + 1;
 
       const startRow = worksheet.addRow([chatNumberLabel(chatNumber), '', '']);
