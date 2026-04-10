@@ -10,6 +10,7 @@ import { create, engine } from 'express-handlebars';
 import setRateLimit from 'express-rate-limit';
 import { body, matchedData, validationResult } from 'express-validator';
 import Papa from 'papaparse';
+import sanitizeHtml from 'sanitize-html';
 
 import {
   certificates,
@@ -43,7 +44,6 @@ import {
 import { requestLoggerMiddleware } from './lib';
 import * as helpers from './lib/helpers';
 import './watchers/watcher';
-import sanitizeHtml from 'sanitize-html';
 
 dotenv.config();
 

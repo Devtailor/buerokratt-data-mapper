@@ -416,21 +416,93 @@ function applyCellStyle(
   if (opts.font?.color) cell.font = { ...cell.font, color: opts.font.color };
 }
 
+type RowValue = string | number | null;
+
+function formatDateCell(val: string | number | Date, dateLocale: string): string {
+  return new Date(val)
+    .toLocaleString(dateLocale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'Europe/Tallinn',
+    })
+    .replaceAll('/', '.')
+    .replaceAll(',', '');
+}
+
+function getCsaFullName(chatRow: Record<string, any>): string {
+  const allCsa: string[] = chatRow.allCsa ?? [];
+  const cleaned = allCsa.filter((n) => !!n && typeof n === 'string' && n.trim() !== '');
+  const filtered = cleaned.length > 1 ? cleaned.filter((n) => n !== 'Bürokratt') : cleaned;
+  return filtered.join(', ') || 'Bürokratt';
+}
+
+function getFeedbackRating(chatRow: Record<string, any>): string {
+  const val = chatRow.feedbackRating;
+  if (val == null) return '';
+  const max = chatRow.isFiveRatingScale === 'true' ? 5 : 10;
+  return `${val}/${max}`;
+}
+
+function getContactsMessage(val: unknown, language: string): string {
+  if (val) return language === 'en' ? 'Yes' : 'Jah';
+  return language === 'en' ? 'No' : 'Ei';
+}
+
+function extractRowValues(
+  chatRow: Record<string, any>,
+  columnIds: string[],
+  language: string,
+  dateLocale: string,
+): RowValue[] {
+  return columnIds.map((colId) => {
+    switch (colId) {
+      case 'created':
+      case 'ended': {
+        const val = chatRow[colId];
+        if (!val) return '';
+        return formatDateCell(val as string | number | Date, dateLocale);
+      }
+      case 'endUserName':
+        return `${chatRow.endUserFirstName ?? ''} ${chatRow.endUserLastName ?? ''}`.trim();
+      case 'customerSupportFullName':
+        return getCsaFullName(chatRow);
+      case 'feedbackRating':
+        return getFeedbackRating(chatRow);
+      case 'contactsMessage':
+        return getContactsMessage(chatRow.contactsMessage, language);
+      case 'status':
+        return chatRow.lastMessageEvent ?? '';
+      case 'www':
+        return chatRow.endUserUrl ?? '';
+      default: {
+        const val = chatRow[colId];
+        if (val == null) return '';
+        return typeof val === 'object' ? JSON.stringify(val) : val;
+      }
+    }
+  });
+}
+
 router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res: Response) => {
   try {
-    const { chatMessages, chatHeaders, chatRows, chatIds, language = 'et' } = req.body;
+    const { chatMessages, chatHeaders, chatRows, chatIds, chatColumnIds, language = 'et' } = req.body;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Chats');
     const MIN_ROW_HEIGHT = 16;
     const POINTS_PER_LINE = 14;
-    const minHeightForWrappedText = (text: string, colWidthChars: number) =>
+    const minHeightForWrappedText = (text: string, colWidthChars: number): number =>
       Math.max(MIN_ROW_HEIGHT, (Math.ceil(((text ?? '').length || 1) / colWidthChars) || 1) * POINTS_PER_LINE);
     const dateLocale = language === 'en' ? 'en-GB' : 'et-EE';
     const createdLabel = language === 'en' ? 'Created' : 'Loodud';
     const authorLabel = language === 'en' ? 'Author' : 'Autor';
     const messageLabel = language === 'en' ? 'Message' : 'Sõnum';
-    const chatNumberLabel = (n: number) => (language === 'en' ? `Chat #${n}` : `Vestlus #${n}`);
+    const chatNumberLabel = (n: number): string => (language === 'en' ? `Chat #${n}` : `Vestlus #${n}`);
     const chatDataSectionLabel = language === 'en' ? 'Chat data' : 'Vestluse andmed';
     const messagesSectionLabel = language === 'en' ? 'Messages' : 'Sõnumid';
 
@@ -439,7 +511,11 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
     worksheet.getColumn(3).width = 100;
 
     chatIds.forEach((chatId: string, index: number) => {
-      const chatRowValues = chatRows[index] ?? [];
+      const rawRow = (chatRows as any[])[index] ?? [];
+      const chatRowValues: (string | number | null)[] =
+        chatColumnIds && !Array.isArray(rawRow)
+          ? extractRowValues(rawRow as Record<string, any>, chatColumnIds, language, dateLocale)
+          : (rawRow as (string | number | null)[]);
       const chatNumber = index + 1;
 
       const startRow = worksheet.addRow([chatNumberLabel(chatNumber), '', '']);
