@@ -1,6 +1,7 @@
+import Handlebars from 'handlebars';
+
 import { Message } from '../../interfaces';
 import { extractMessageInfo } from '../util';
-import Handlebars from 'handlebars';
 
 export const generateMessagesTable = (
   template: string,
