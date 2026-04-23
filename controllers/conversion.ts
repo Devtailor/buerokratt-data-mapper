@@ -646,4 +646,36 @@ router.post('/xlsx-to-array', async (req: Request<{}, {}, { file: Record<string,
   }
 });
 
+router.post('/json_to_yaml_quoted', (req: Request, res: Response) => {
+  const { keys = [], ...data } = req.body;
+  let result = stringify(data, { lineWidth: 0 });
+
+  if (keys.length > 0) {
+    result = result
+      .split('\n')
+      .map((line: string) => {
+        const trimmedLine = line.trim();
+        const matchedKey = (keys as string[]).find(
+          (key) => trimmedLine.startsWith(`${key}:`) || trimmedLine.startsWith(`- ${key}:`),
+        );
+        if (!matchedKey) return line;
+
+        const index = line.indexOf(':');
+        const prefix = line.substring(0, index);
+        const value = line.substring(index + 1).trim();
+
+        if (value.startsWith("'") && value.endsWith("'")) {
+          return `${prefix}: "${value.slice(1, -1).replace(/"/g, '\\"')}"`;
+        }
+        if (!value.startsWith('"') || !value.endsWith('"')) {
+          return `${prefix}: "${value.replace(/"/g, '\\"')}"`;
+        }
+        return line;
+      })
+      .join('\n');
+  }
+
+  res.send({ json: result });
+});
+
 export default router;
