@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { stringify } from 'yaml';
 
 import {
+  buildChatExportPaths,
   buildContentFilePath,
   getAllFiles,
   getHeadersMapping,
@@ -48,6 +49,21 @@ describe('utils', () => {
     process.env.CONTENT_FOLDER = tempDir;
     const fileName = 'foo.txt';
     expect(buildContentFilePath(fileName)).toBe(path.join(tempDir, fileName));
+  });
+
+  it('buildChatExportPaths returns absolute fs path and relative file path', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(1710000000000);
+
+    const chatExportsDir = path.join(tempDir, 'chat-exports');
+    const result = buildChatExportPaths(chatExportsDir);
+
+    expect(result.absoluteFsPath).toMatch(
+      new RegExp(
+        `^${chatExportsDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}${path.sep}chat-history-.+-1710000000000\\.xlsx$`,
+      ),
+    );
+    expect(result.relativeFilePath).toMatch(new RegExp(`^chat-exports\\${path.sep}.+\\.xlsx$`));
+    expect(path.isAbsolute(result.relativeFilePath)).toBe(false);
   });
 
   it('isValidFilename validates allowed filenames', () => {
@@ -115,5 +131,9 @@ describe('utils', () => {
 
   it('parseJwt returns null for invalid JWT', () => {
     expect(parseJwt('bad.token')).toBeNull();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 });

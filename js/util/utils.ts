@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -152,4 +153,13 @@ export function sanitizeHtmlForPdf(html: string): string {
     },
     disallowedTagsMode: 'discard',
   });
+}
+
+export function buildChatExportPaths(chatExportsDir: string): { absoluteFsPath: string; relativeFilePath: string } {
+  const CHAT_EXPORTS_RELATIVE_DIR = 'chat-exports';
+  const fileName = `chat-history-${randomUUID()}-${Date.now()}.xlsx`;
+  return {
+    absoluteFsPath: path.join(chatExportsDir, fileName),
+    relativeFilePath: path.join(CHAT_EXPORTS_RELATIVE_DIR, fileName),
+  };
 }

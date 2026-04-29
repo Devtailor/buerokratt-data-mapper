@@ -1,3 +1,6 @@
+import fs from 'fs/promises';
+import path from 'path';
+
 import ExcelJS from 'exceljs';
 import express, { Request, RequestHandler, Response } from 'express';
 import { body, matchedData, validationResult } from 'express-validator';
@@ -7,12 +10,13 @@ import { parse, stringify } from 'yaml';
 
 import { ChatMessage, ChatsToXlsxBody, Rule, RuleStoryStep, Story } from '../interfaces';
 import { convertJsonToYamlDomain } from '../js/convert';
-import { base64ToText } from '../js/util';
+import { base64ToText, buildChatExportPaths } from '../js/util';
 
 const router = express.Router();
 
 // Common file size limit constant (5MB)
 const FILE_SIZE_LIMIT = 5 * 1024 * 1024;
+const CHAT_EXPORTS_DIR = path.join(process.env.CONTENT_FOLDER || 'data', 'chat-exports');
 
 router.post(
   '/csv_to_json',
@@ -606,8 +610,11 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
       worksheet.addRow([]);
     });
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    res.json({ base64String: Buffer.from(buffer).toString('base64') });
+    await fs.mkdir(CHAT_EXPORTS_DIR, { recursive: true });
+    const { absoluteFsPath, relativeFilePath } = buildChatExportPaths(CHAT_EXPORTS_DIR);
+    await workbook.xlsx.writeFile(absoluteFsPath);
+
+    res.json({ filePath: relativeFilePath });
   } catch (err: any) {
     console.error('Excel export error:', err);
     res.status(500).json({ error: 'Failed to export Excel' });
