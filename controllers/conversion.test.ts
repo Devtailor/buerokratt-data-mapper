@@ -1,10 +1,14 @@
+import fs from 'fs/promises';
+import path from 'path';
+
 import ExcelJS from 'exceljs';
 import express, { Express } from 'express';
 import request from 'supertest';
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { parse, stringify } from 'yaml';
 
 import conversionRouter from './conversion';
+import { buildContentFilePath } from '../js/util';
 
 vi.mock('yaml', async () => {
   const actual = await vi.importActual<typeof import('yaml')>('yaml');
@@ -13,11 +17,16 @@ vi.mock('yaml', async () => {
 
 describe('conversion controller', () => {
   let app: Express;
+  const chatExportsDir = path.join(process.env.CONTENT_FOLDER || 'data', 'chat-exports');
 
   beforeAll(() => {
     app = express();
     app.use(express.json());
     app.use('/conversion', conversionRouter);
+  });
+
+  afterAll(async () => {
+    await fs.rm(chatExportsDir, { recursive: true, force: true });
   });
 
   describe('POST /conversion/csv_to_json', () => {
@@ -704,10 +713,12 @@ describe('conversion controller', () => {
         chatIds: ['1'],
       };
       const res = await request(app).post('/conversion/chats-to-xlsx').send(data);
+      const fileBuffer = await fs.readFile(buildContentFilePath(res.body.filePath));
+      const base64String = fileBuffer.toString('base64');
 
       const xlsxDataArray = await request(app)
         .post('/conversion/xlsx-to-array')
-        .send({ file: { 'test.xlsx': res.body.base64String } });
+        .send({ file: { 'test.xlsx': base64String } });
 
       expect(xlsxDataArray.body).toEqual([
         ['Vestlus #1', '', ''],
@@ -735,10 +746,12 @@ describe('conversion controller', () => {
         language: 'en',
       };
       const res = await request(app).post('/conversion/chats-to-xlsx').send(data);
+      const fileBuffer = await fs.readFile(buildContentFilePath(res.body.filePath));
+      const base64String = fileBuffer.toString('base64');
 
       const xlsxDataArray = await request(app)
         .post('/conversion/xlsx-to-array')
-        .send({ file: { 'test.xlsx': res.body.base64String } });
+        .send({ file: { 'test.xlsx': base64String } });
 
       expect(xlsxDataArray.body).toEqual([
         ['Chat #1', '', ''],
@@ -779,11 +792,13 @@ describe('conversion controller', () => {
       const mockBuffer = Buffer.from('mock-xlsx');
       vi.spyOn(ExcelJS.Workbook.prototype, 'xlsx', 'get').mockReturnValueOnce({
         writeBuffer: vi.fn().mockResolvedValue(mockBuffer),
+        writeFile: vi.fn().mockResolvedValue(undefined),
       } as unknown as ExcelJS.Xlsx);
 
       const res = await request(app).post('/conversion/chats-to-xlsx').send(data);
-
-      expect(res.body).toHaveProperty('base64String');
+      expect(res.body).toHaveProperty('filePath');
+      expect(res.body.filePath).toMatch(/^chat-exports[\\/].+\.xlsx$/);
+      expect(path.isAbsolute(res.body.filePath)).toBe(false);
       expect(mockWorksheet.addRow).toHaveBeenCalled();
       expect(res.status).toBe(200);
 
