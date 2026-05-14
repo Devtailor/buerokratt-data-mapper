@@ -16,7 +16,28 @@ const router = express.Router();
 
 // Common file size limit constant (5MB)
 const FILE_SIZE_LIMIT = 5 * 1024 * 1024;
-const CHAT_EXPORTS_DIR = path.join(process.env.CONTENT_FOLDER || 'data', 'chat-exports');
+const CONTENT_FOLDER = process.env.CONTENT_FOLDER || 'data';
+const CHAT_EXPORTS_RELATIVE_DIR = 'chat-exports';
+const CHAT_EXPORTS_DIR = path.join(CONTENT_FOLDER, CHAT_EXPORTS_RELATIVE_DIR);
+
+function resolveChatExportUnlinkPath(filePath: string): string | null {
+  if (path.isAbsolute(filePath)) {
+    return null;
+  }
+
+  const normalizedFilePath = path.normalize(filePath.replace(/\\/g, path.sep));
+  const chatExportsPrefix = `${CHAT_EXPORTS_RELATIVE_DIR}${path.sep}`;
+
+  if (
+    !normalizedFilePath.startsWith(chatExportsPrefix) ||
+    !path.basename(normalizedFilePath).startsWith('chat-history-') ||
+    path.extname(normalizedFilePath).toLowerCase() !== '.xlsx'
+  ) {
+    return null;
+  }
+
+  return path.join(CONTENT_FOLDER, normalizedFilePath);
+}
 
 router.post(
   '/csv_to_json',
@@ -618,6 +639,32 @@ router.post('/chats-to-xlsx', async (req: Request<{}, {}, ChatsToXlsxBody>, res:
   } catch (err: any) {
     console.error('Excel export error:', err);
     res.status(500).json({ error: 'Failed to export Excel' });
+  }
+});
+
+router.post('/chats-to-xlsx/unlink', async (req: Request<{}, {}, { readonly filePath: string }>, res: Response) => {
+  try {
+    const { filePath } = req.body;
+
+    if (!filePath) {
+      return res.status(400).json({ error: 'filePath is required' });
+    }
+
+    const unlinkPath = resolveChatExportUnlinkPath(filePath);
+    if (!unlinkPath) {
+      return res.status(400).json({ error: 'Only chats-to-xlsx exports can be unlinked' });
+    }
+
+    await fs.unlink(unlinkPath);
+
+    res.status(200).send({ isUnlinked: true });
+  } catch (error: any) {
+    if (error?.code === 'ENOENT') {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    console.error('File unlink error:', error);
+    res.status(500).json({ error: 'Failed to unlink file' });
   }
 });
 

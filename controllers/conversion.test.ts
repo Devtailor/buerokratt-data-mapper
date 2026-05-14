@@ -814,6 +814,63 @@ describe('conversion controller', () => {
     });
   });
 
+  describe('POST /conversion/chats-to-xlsx/unlink', () => {
+    it('should unlink a chats-to-xlsx export by relative file path', async () => {
+      const filePath = path.join('chat-exports', 'chat-history-unlink-test.xlsx');
+      const absoluteFilePath = path.join(process.env.CONTENT_FOLDER || 'data', filePath);
+      await fs.mkdir(path.dirname(absoluteFilePath), { recursive: true });
+      await fs.writeFile(absoluteFilePath, 'temporary export');
+
+      const res = await request(app).post('/conversion/chats-to-xlsx/unlink').send({ filePath });
+
+      await expect(fs.access(absoluteFilePath)).rejects.toThrow();
+      expect(res.body).toEqual({ isUnlinked: true });
+      expect(res.status).toBe(200);
+    });
+
+    it('should reject non-chat export files inside chat-exports', async () => {
+      const filePath = path.join('chat-exports', 'other-export.xlsx');
+      const absoluteFilePath = path.join(process.env.CONTENT_FOLDER || 'data', filePath);
+      await fs.mkdir(path.dirname(absoluteFilePath), { recursive: true });
+      await fs.writeFile(absoluteFilePath, 'temporary export');
+
+      const res = await request(app).post('/conversion/chats-to-xlsx/unlink').send({ filePath });
+
+      await expect(fs.access(absoluteFilePath)).resolves.toBeUndefined();
+      await fs.unlink(absoluteFilePath);
+      expect(res.body).toEqual({ error: 'Only chats-to-xlsx exports can be unlinked' });
+      expect(res.status).toBe(400);
+    });
+
+    it('should reject paths outside chats-to-xlsx exports', async () => {
+      const filePath = path.join(process.cwd(), `unlink-test-${Date.now()}.xlsx`);
+      await fs.writeFile(filePath, 'temporary export');
+
+      const res = await request(app).post('/conversion/chats-to-xlsx/unlink').send({ filePath });
+
+      await expect(fs.access(filePath)).resolves.toBeUndefined();
+      await fs.unlink(filePath);
+      expect(res.body).toEqual({ error: 'Only chats-to-xlsx exports can be unlinked' });
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 when filePath is missing', async () => {
+      const res = await request(app).post('/conversion/chats-to-xlsx/unlink').send({});
+
+      expect(res.body).toEqual({ error: 'filePath is required' });
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 404 when file does not exist', async () => {
+      const res = await request(app).post('/conversion/chats-to-xlsx/unlink').send({
+        filePath: path.join('chat-exports', 'chat-history-missing.xlsx'),
+      });
+
+      expect(res.body).toEqual({ error: 'File not found' });
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe('POST /conversion/xlsx-to-array', () => {
     it('should convert Excel to array', async () => {
       const xlsxData = {
