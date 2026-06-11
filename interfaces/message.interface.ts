@@ -6,5 +6,6 @@ export interface Message {
   authorRole?: string;
   authorFirstName?: string;
   authorLastName?: string;
+  authorTimestamp?: string;
   csaTitle?: string;
 }

@@ -43,6 +43,7 @@ import {
 } from './js/util';
 import { requestLoggerMiddleware } from './lib';
 import * as helpers from './lib/helpers';
+
 import './watchers/watcher';
 
 dotenv.config();
@@ -344,6 +345,32 @@ app.post(
       console.error('Error during SMAX authentication:', error);
       return res.status(401).json({ error: `Unauthorized` });
     }
+  },
+);
+
+app.post(
+  '/smax-format-messages',
+  [body('messages').isArray().withMessage('messages is required and must be an array')],
+  (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { messages } = matchedData(req) as { messages: Message[] };
+
+    const messagesHtml = messages
+      .filter((m) => m.content)
+      .map((m) => {
+        const timestamp = m.authorTimestamp
+          ? new Date(m.authorTimestamp).toLocaleString('et-EE', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'Europe/Tallinn' })
+          : '';
+        const name = [m.authorFirstName, m.authorLastName].filter(Boolean).join(' ');
+        return `[${timestamp}] ${name ? name + ' ' : ''}(${m.authorRole ?? ''}): ${m.content}`;
+      })
+      .join('<br>');
+
+    res.json({ messagesHtml });
   },
 );
 
