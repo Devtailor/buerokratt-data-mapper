@@ -1,21 +1,39 @@
-# Build image
-FROM node:20.13.1-alpine AS build
+# Build
+FROM node:20.19.3-alpine AS build
 WORKDIR /workspace/app/
 EXPOSE 3000
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-RUN apk add --no-cache chromium
-COPY package*.json .
-RUN npm ci --ignore-scripts
+RUN apk add --no-cache chromium curl bash
 
-# Run image
-FROM build AS run
+COPY package.json package-lock.json ./
+
+# Uncomment this when you run npm install locally
+#RUN npm ci --ignore-scripts
+RUN npm install --ignore-scripts 
+
+COPY . .
+
+RUN npm run build
+
+# Runtime
+FROM node:20.19.3-alpine AS run
+WORKDIR /workspace/app/
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+RUN apk add --no-cache curl bash chromium
+
 USER node
-COPY controllers controllers
-COPY views views
-COPY lib lib
-COPY js js
-COPY server.js ./
+EXPOSE 3000
+
+COPY --from=build --chown=node:node /workspace/app/dist ./
+COPY --from=build --chown=node:node /workspace/app/package.json ./
+COPY --from=build --chown=node:node /workspace/app/node_modules ./node_modules
+COPY --from=build --chown=node:node /workspace/app/.env ./
+COPY --from=build --chown=node:node /workspace/app/sync.sh ./
+
 ENTRYPOINT ["npm", "start"]

@@ -1,10 +1,21 @@
 <html>
   <body>
-    <div
-      style="display:flex; flex-direction: column; justify-content: center; align-items: center;"
-    >
+    <div style='display:flex; flex-direction: column; justify-content: center; align-items: center;'>
       <h2>Vestlusajalugu</h2>
-      <table id="chatHistoryTable" style="padding: 16px;"></table>
+      <table id='chatHistoryTable' style='padding: 16px;'>
+        <tr class='header'>
+          <th style='text-align: left'>Autor</th>
+          <th style='padding:0 50px; text-align: left'>Sõnum</th>
+          <th style='text-align: left'>Aeg</th>
+        </tr>
+        {{#each messages}}
+          <tr>
+            <td style='border-bottom:1px solid lightgray'>{{author}}</td>
+            <td style='padding:0 50px; border-bottom:1px solid lightgray'>{{message}}</td>
+            <td style='border-bottom:1px solid lightgray; width: 140px;'>{{date}}</td>
+          </tr>
+        {{/each}}
+      </table>
     </div>
   </body>
 </html>
