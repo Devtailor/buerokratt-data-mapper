@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
-import * as path from 'path';
 import https from 'https';
+import * as path from 'path';
 
 import axios from 'axios';
 import bodyParser from 'body-parser';
